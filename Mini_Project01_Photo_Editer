@@ -1,0 +1,1006 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#include<Windows.h>
+#include<math.h>
+
+#include <io.h>
+#include <string.h>
+
+//////////////
+//함수 선언
+//////////////
+//공용함수
+void mainMenu();
+void openImg();
+void sizeCheck();
+unsigned char** malloc2D();
+void displayImg();
+void freeOutputImg();
+void freeInputImg();
+void saveImg();
+char* findFileList();
+void menu2();
+void menu3();
+void menu4();
+
+
+//변환함수
+//화소점처리
+void origin();
+void bright();
+void reverse();
+void gamma();
+void posterising();
+void blackWhite();
+void focus();
+//기하학처리
+void zoomIn();
+void zoomOut();
+void move();
+void mir();
+void rotate();
+//히스토그램을 이용한 화소점처리
+void strech();
+void equalized();
+
+//////////////
+//전역변수
+//////////////
+//윈도우 화면용
+HWND hwnd;
+HDC hdc;
+
+int inL = 0, outL = 0;
+unsigned char** inImg = NULL;
+unsigned char** outImg = NULL;
+
+#define pi 3.141592
+
+/////////////
+//메인
+/////////////
+void main() {
+
+	hwnd = GetForegroundWindow();
+	hdc = GetWindowDC(hwnd);
+	char select = 0;
+
+
+	while (select != 'x' && select != 'X') {	//프로그램 종료 전까지 계속 실행
+		mainMenu();
+		select = getche();
+
+		switch (select) {
+		case 'x':		case 'X':			//프로그램 종료
+			puts("프로그램을 종료합니다.");
+			break;
+
+		case 'o':		case 'O':			//파일 열기
+			puts("파일을 불러옵니다.");
+			openImg();
+			break;
+
+		case 's':		case 'S':			//파일 저장
+			puts("파일을 저장합니다.");
+			saveImg();
+			break;
+
+		case '1':							//원본출력
+			puts("원본을 출력합니다.");
+			origin();
+			break;
+
+		case '2':							//화소 점처리
+			puts("화소점처리를 합니다.");
+			menu2();
+			break;
+
+		case '3':							//기하학 처리
+			puts("화소점처리를 합니다.");
+			menu3();
+			break;
+
+		case '4':							//기하학 처리
+			puts("히스토그램을 이용한 화소점처리를 합니다.");
+			menu4();
+			break;
+
+		default:
+			puts("잘못 입력하셨습니다.");
+			break;
+		}
+
+	}
+
+	freeInputImg();
+	freeOutputImg();	//종료시 가상메모리 Null값으로 초기화
+}
+
+/////////////
+//공용 함수
+/////////////
+void mainMenu() {
+	puts("===================영상 처리 프로그램====================");
+	puts("원본을 먼저 가져와 주세요.");
+	puts("O. 파일 가져오기	s. 파일 저장	x.프로그램 종료");
+	puts("1. 원본	2. 화소점 처리	3. 기하학 처리");
+	puts("4. 히스토그램");
+}
+
+void menu2() {
+	int select2 = 0;
+
+	while (select2 != 'x' && select2 != 'X') {
+		puts("===================화소 점처리====================");
+		puts("x.프로그램 종료");
+		puts("1. 밝기조절	2. 감마	3. 반전");
+		puts("4. 포스터라이징	5. 흑백	6. 강조");
+		select2 = getche();
+
+		switch (select2)
+		{
+		case 'x':	case 'X':				//화소점처리 종료
+			puts("이전메뉴로 되돌아갑니다..");
+			break;
+
+		case '1':							//밝기조절
+			puts("밝기를 조절합니다.");
+			bright();
+			select2 = 'x';
+			break;
+
+		case '2':							//감마
+			puts("감마 효과를 줍니다.");
+			gamma();
+			select2 = 'x';
+			break;
+
+		case '3':							//반전
+			puts("반전 시킵니다.");
+			reverse();
+			select2 = 'x';
+			break;
+
+		case '4':							//포스터라이징
+			puts("포스터라이징 시킵니다.");
+			posterising();
+			select2 = 'x';
+			break;
+
+		case '5':							//흑백
+			puts("흑백효과를 줍니다.");
+			blackWhite();
+			select2 = 'x';
+			break;
+
+		case '6':							//범위강조
+			puts("강조시킵니다.");
+			focus();
+			select2 = 'x';
+			break;
+
+		default:
+			puts("잘못 입력하셨습니다.");
+			break;
+		}
+	}
+}
+
+void menu3() {
+	int select3 = 0;
+
+	while (select3 != 'x' && select3 != 'X') {
+		puts("===================기하학 처리====================");
+		puts("x.프로그램 종료");
+		puts("1. 확대	2. 축소	3. 이동");
+		puts("4. 미러	5. 회전");
+		select3 = getche();
+
+		switch (select3) {
+		case '1':							//확대
+			puts("확대시킵니다.");
+			zoomIn();
+			select3 = 'x';
+			break;
+
+		case '2':							//축소
+			puts("축소시킵니다.");
+			zoomOut();
+			select3 = 'x';
+			break;
+
+		case '3':							//이동
+			puts("이동시킵니다.");
+			move();
+			select3 = 'x';
+			break;
+
+		case '4':							//미러
+			puts("뒤집습니다.");
+			mir();
+			select3 = 'x';
+			break;
+
+		case '5':							//회전
+			puts("회전시킵니다.");
+			rotate();
+			select3 = 'x';
+			break;
+
+		default:
+			puts("잘못 입력하셨습니다.");
+			break;
+		}
+
+	}
+}
+
+void menu4() {
+	int select4 = 0;
+
+	while (select4 != 'x' && select4 != 'X') {
+		puts("===================히스토그램을 이용한 화소점 처리 ====================");
+		puts("x.프로그램 종료");
+		puts("1. 산술연산(보수중)	2. 평활화	3. 명세화");
+		puts("4. 미러	5. 회전");
+		select4 = getche();
+
+		switch (select4) {
+		case '1':							//
+			puts("산술연산을 이용합니다.");
+			strech();
+			select4 = 'x';
+			break;
+
+		case '2':							//
+			puts("평활화를 이용합니다.");
+			equalized();
+			select4 = 'x';
+			break;
+
+		default:
+			puts("잘못 입력하셨습니다.");
+			break;
+		}
+
+	}
+}
+
+void openImg() {
+	char fileAdress[200];	//파일주소를 받을곳
+	char fileName[100];		//파일명을 받을곳
+	char fullAdress[200];
+
+	strcpy(fileAdress, "C:\\img\\RAW\\Pet_RAW(squre)\\Pet_RAW(512x512)\\");		//파일이 있는 최소 주소
+	//strcpy(fileAdress, "C:\\Users\\jmhc6\\OneDrive\\바탕 화면\\Programing\\Pet_RAW(512x512)\\");
+	//집에서 할때 파일 경로
+	//파일명 : homeSample001_512
+	strcpy(fullAdress, fileAdress);
+
+	//	//파일명 받아오기
+	//printf("\n 오픈할 파일명 : ");
+	//scanf("%s", fileName);
+
+	//strcat(fullAdress, fileName);
+	//strcat(fullAdress, ".raw");		//최종 파일주소
+
+
+	//폴더에서 랜덤한 사진 불러오기
+	strcpy(fullAdress, findFileList(fileAdress));
+
+	//사진 크기 확인 & inImg에 배열 생성
+	sizeCheck(fullAdress);
+
+	printf("\n원본 이미지를 가져왔습니다.\n");
+	origin();
+}
+
+void sizeCheck(char* fileAdress) {	//사진의 크기 확인하고 inImg에 배열생성
+	FILE* filePointer;
+	filePointer = fopen(fileAdress, "rb");
+
+	if (filePointer == NULL) {	//파일 여부 확인
+		MessageBox(hwnd, L"파일이 없습니다.", L"출력창", NULL);
+		//MessageBox(hwnd, 출력 내용, 박스 이름, NULL)
+		return;
+	}
+
+	//파일크기 확인
+	fseek(filePointer, 0L, SEEK_END);	//filePoiter의 마지막 찾기 = 크기 찾기
+	long fileSize = ftell(filePointer);	//fileSize를 선언하고 filePointer의 끝입력하기
+	fclose(filePointer);
+
+	freeInputImg();	//가상메모리 Null값으로 초기화
+
+	filePointer = fopen(fileAdress, "rb");
+	inL = (int)sqrt(fileSize);	//정사각형의 이미지 크기를 루트를 씌워 한변의 크기를 계산하고 입력
+	inImg = malloc2D(inL);
+	for (int i = 0; i < inL; i++)
+		fread(inImg[i], sizeof(unsigned char), inL, filePointer);
+
+	fclose(filePointer);
+}
+unsigned char** malloc2D(int L) {	//가상메모리 2차원 배열 생성
+	unsigned char** p;
+	p = (unsigned char**)malloc(L * sizeof(unsigned char*));
+
+	for (int i = 0; i < L; i++)
+		p[i] = (unsigned char*)malloc(L * sizeof(unsigned char));
+
+	return p;
+}
+
+void displayImg() {
+	system("cls");		//화면 초기화
+	unsigned char pix;
+
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			pix = outImg[i][k];
+			SetPixel(hdc, k + 50, i + 200, RGB(pix, pix, pix));
+		}
+	}
+
+}
+
+void freeOutputImg() {
+	if (outImg == NULL)	//출력이미지값 채운적이 없으면 되돌아가기
+		return;
+
+	for (int i = 0; i < outL; i++) {
+		free(outImg[i]);
+	}
+	free(outImg);
+
+	outImg = NULL;
+}
+
+void freeInputImg() {
+	if (inImg == NULL)	//출력이미지값 채운적이 없으면 되돌아가기
+		return;
+
+	for (int i = 0; i < inL; i++) {
+		free(inImg[i]);
+	}
+	free(inImg);
+
+	inImg = NULL;
+}
+
+void saveImg() {
+	char saveAdress[200];	//파일주소를 받을곳
+	char saveName[100];		//파일명을 받을곳
+
+	strcpy(saveAdress, "C:\\img\\Project\\01\\");		//파일이 있는 최소 주소
+	//strcpy(fileAdress, "C:\\Users\\jmhc6\\OneDrive\\바탕 화면\\Programing\\Pet_RAW(512x512)\\");
+	//집에서 할때 파일 경로
+	//파일명 : homeSample001_512
+
+	printf("\n 저장할 파일명 : ");
+	scanf("%s", saveName);
+
+	strcat(saveAdress, saveName);
+	strcat(saveAdress, ".raw");		//최종 파일주소
+
+	//파일 저장
+	FILE* writeFilePointer = fopen(saveAdress, "wb");
+	for (int i = 0; i < outL; i++)
+		fwrite(outImg[i], sizeof(unsigned char), outL, writeFilePointer);
+	//outImg[i]에 있는 데이터를 outL 길이 만큼 sizeof(unsigned char) 크기로
+	//writeFIlePointer 위치에 저장해라
+	fclose(saveAdress);
+
+
+	printf("\n%s로 파일을 저장했습니다.\n", saveAdress);
+}
+
+
+//랜덤 폴더 가져오기
+char* findFileList(char* path) {
+	// #include <io.h>
+	// #include <string.h>
+	// #include <time.h>
+	char tmpPath[200];
+	char retFname[200];
+	char fnameList[1000][200];  // 파일 최대 1000개
+	int  fCount = 0;
+	struct _finddata_t fd;
+	long handle;
+	int result = 1;
+
+	strcpy(tmpPath, path);
+	handle = _findfirst(strcat(tmpPath, "*.*"), &fd);
+	while (result != -1)
+	{
+		strcpy(fnameList[fCount++], fd.name);
+		result = _findnext(handle, &fd);
+	}
+	_findclose(handle);
+	srand(time(NULL));
+	int pos = rand() % fCount;
+	strcpy(retFname, path);
+	strcat(retFname, fnameList[pos]);
+
+	return retFname;
+}
+
+/////////////
+//변환함수
+/////////////
+//원본 출력 알고리즘
+void origin() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			outImg[i][k] = inImg[i][k];
+		}
+	}
+
+	displayImg();	//출력
+}
+
+///////////////
+//화소 점처리
+////////////
+//밝기 조절 알고리즘
+void bright() {	//밝기조절
+	if (inImg == NULL) {
+		puts("파일을 먼저 불러오세요");
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	int value = 0;
+	int select2 = 0;
+
+	//밝게, 어둡게 선택하기
+	while (1) {
+		puts("");
+		puts("옵션을 선택해 주세요.");
+		puts("1. 밝게	2. 어둡게");
+
+		select2 = getche();
+
+		if (select2 != '1' && select2 != '2')
+			MessageBox(hwnd, L"잘못 입력하셨습니다.", L"출력창", NULL);
+
+		if (select2 == '1' || select2 == '2')
+			break;
+	}
+
+	//수치 입력하기
+	while (1) {
+		puts("");
+		puts("조절 값을 입력해주세요(1 ~ 254)");
+
+		scanf("%d", &value);
+		puts("");
+
+		if (value <= 0 || value >= 255) {
+			if (value <= 0) {
+				MessageBox(hwnd, L"너무 낮습니다.", L"출력창", NULL);
+			}
+			else if (value >= 255) {
+				MessageBox(hwnd, L"너무 높습니다.", L"출력창", NULL);
+			}
+			else
+				MessageBox(hwnd, L"무언가가 잘못되었습니다.\n 제작자에게 문의하세요.", L"출력창", NULL);
+		}
+		if (value > 0 && value < 255)
+			break;
+	}
+
+
+	//출력 준비
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//출력이미지 변환
+	switch (select2) {
+	case '1':	//밝게
+		for (int i = 0; i < outL; i++) {
+			for (int k = 0; k < outL; k++) {
+				if (inImg[i][k] + value > 255)
+					outImg[i][k] = 255;
+				else
+					outImg[i][k] = inImg[i][k] + value;
+			}
+		}
+		break;
+
+	case '2':	//어둡게
+		value *= -1;	//어두워 지도록 수치값 음수로 변환
+		for (int i = 0; i < outL; i++) {
+			for (int k = 0; k < outL; k++) {
+				if (inImg[i][k] + value < 0)
+					outImg[i][k] = 0;
+				else
+					outImg[i][k] = inImg[i][k] + value;
+			}
+		}
+		break;
+
+	default:
+		MessageBox(hwnd, L"무언가가 잘못되었습니다.\n 제작자에게 문의하세요.", L"출력창", NULL);
+
+		break;
+	}
+
+	displayImg();	//출력
+}
+
+//반전 알고리즘
+void reverse() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			outImg[i][k] = 255 - inImg[i][k];
+		}
+	}
+
+	displayImg();	//출력
+}
+void gamma() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	double value = 0;
+
+	//수치 입력하기
+	while (1) {
+		puts("");
+		puts("조절 값을 입력해주세요(0 ~ 5)");
+
+		scanf("%lf", &value);
+
+		if (value < 0 || value > 5) {
+			if (value < 0) {
+				MessageBox(hwnd, L"너무 낮습니다.", L"출력창", NULL);
+			}
+			else if (value > 5) {
+				MessageBox(hwnd, L"너무 높습니다.", L"출력창", NULL);
+			}
+			else
+				MessageBox(hwnd, L"무언가가 잘못되었습니다.\n 제작자에게 문의하세요.", L"출력창", NULL);
+		}
+		if (value >= 0 && value <= 5)
+			break;
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			outImg[i][k] = 255 * pow(((double)inImg[i][k] / 255), value);
+		}
+	}
+
+	displayImg();	//출력
+}
+
+//포스터라이징
+void posterising() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	int cutLevel = 32;		//경계값
+	int cut = 255 / cutLevel;	//나눈수
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			if (inImg[i][k] < 0)					//버그 확인겸 임시 코드, 삭제해도 무방할것으로 예상
+				outImg[i][k] = 0;
+			else if (inImg[i][k] > cut * cutLevel)	//경계값 * 나눈수 < inImg < 255 사이일때 inImg = 255
+				outImg[i][k] = 255;
+			else {
+				for (int m = 0; m < cut; m++) {				//0부터 경계값으로 나눈 수만큼 for 반복
+					if (inImg[i][k] < cutLevel * (m + 1)) {	//ex)0~31 = 32로, 32~63 = 64로 하위숫자를 위에 경계구간으로 올림
+						outImg[i][k] = cutLevel * (m + 1);	//제일 작은 구간부터 제일 큰구간까지 구별
+						break;								//outImg에 입력이 되고 다음구간에는 속하지 않는다면 for(m)나가기
+					}
+				}
+			}
+		}
+	}
+
+	displayImg();	//출력
+}
+
+//흑백
+void blackWhite() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			if (inImg[i][k] > 127)
+				outImg[i][k] = 255;
+			else
+				outImg[i][k] = 0;
+		}
+	}
+
+	displayImg();	//출력
+}
+
+//범위 강조
+void focus() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	int focusMin = 200;
+	int focusMax = 250;
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			if (inImg[i][k] < focusMax && inImg[i][k] > focusMin)
+				outImg[i][k] = 255;
+			else
+				outImg[i][k] = inImg[i][k];
+		}
+	}
+
+	displayImg();	//출력
+}
+
+/////////////
+//기하학 처리
+////////////
+//확대	//미완성, 주석확인할 것
+void zoomIn() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	int scale = 0;
+
+	printf("몇배 확대하시겠습니까?");
+	scanf("%d", &scale);	//확대할 배수 받아오기
+
+	/////////////////////////////
+	//소수점 입력 방지코드 짜기
+	//////////////////////////////
+
+	outL = inL * scale;		//출력 할 크기 배수만큼 증가
+	outImg = malloc2D(outL);	//출력 할 이미지 배열 생성
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			outImg[i][k] = inImg[(int)(i / scale)][(int)(k / scale)];
+		}
+	}
+
+	displayImg();	//출력
+
+}
+
+
+//축소 //미완성, 주석확인할 것
+void zoomOut() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	int scale = 0;
+	printf("몇배 축소하시겠습니까?");
+	scanf("%d", &scale);	//축소할 배수 받아오기
+
+	/////////////////////////////
+	//소수점 입력 방지코드 짜기
+	//////////////////////////////
+
+	outL = inL / scale;		//출력 할 크기 배수만큼 감소
+	outImg = malloc2D(outL);	//출력 할 이미지 배열 생성
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < inL; i++) {
+		for (int k = 0; k < inL; k++) {
+			outImg[(int)(i / scale)][(int)(k / scale)] = inImg[i][k];
+		}
+	}
+
+	displayImg();	//출력
+}
+
+//이동
+void move() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	int row = 100;
+	int high = 100;
+	//puts("가로값 : ");
+	//scanf("%d", &row);	//가로값
+	//puts("세로값 : ");
+	//scanf("%d", &high);	//세로값
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {	//outL - 거리 : '거리'만큼 이동했기 때문에 outL 이상의 범위는 '거리'만큼 안씀
+			if (i < high || k < row)
+				outImg[i][k] = 0;
+			else
+				outImg[i][k] = inImg[i - high][k - row];
+			//row,k 가로 high,i 세로
+		}
+	}
+
+	displayImg();	//출력
+}
+
+void mir() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	//상하반전
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			outImg[i][k] = inImg[outL - i - 1][k];
+		}
+	}
+
+	//좌우반전
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			outImg[i][k] = inImg[i][outL - k - 1];
+		}
+	}
+
+	displayImg();	//출력
+}
+
+//정회전 돌리고 튀어나온 부분 자르기
+void rotate() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	//중심점 기준
+	double controlPointX = outL / 2;
+	double ControlPointY = outL / 2;
+	////왼쪽아래점 기준
+	//int controlPointX = 0;
+	//int ControlPointY = outL;
+
+
+	double degree = 30; //각도
+	//이동전 좌표
+	int mX, mY;
+
+	double radian = degree * pi / 180;
+	double ca = cos(radian);
+	double sa = sin(radian);
+
+	/*
+	for (y = 0; y < Height; y++)
+	{
+		for (x = 0; x < Width; x++)
+		{
+			orig_x = (int)(xcenter + ((double)y - ycenter) * ss + ((double)x - xcenter) * cc);
+			orig_y = (int)(ycenter + ((double)y - ycenter) * cc - ((double)x - xcenter) * ss);
+			pixel = 0; // (3)
+			if ((orig_y >= 0 && orig_y < Height) && (orig_x >= 0 && orig_x < Width)) // (4)
+				pixel = InputImage[orig_y][orig_x]; // (5)
+			OutputImage[y][x] = pixel; // (6)
+		} // x-loop
+	} /
+	i=y k=x
+	출저 : http://blog.naver.com/virapasas/130185961923
+*/
+
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//우측으로 돌리기
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int high = 0; high < inL; high++) {
+		for (int row = 0; row < inL; row++) {
+			mX = (int)(controlPointX + ((double)high - ControlPointY) * sa + ((double)row - controlPointX) * ca);
+			mY = (int)(ControlPointY + ((double)high - ControlPointY) * ca - ((double)row - controlPointX) * sa);
+
+			if ((mY >= 0 && mY < outL) && (mX >= 0 && mX < outL))
+				outImg[high][row] = inImg[mY][mX];
+			else
+				outImg[high][row] = 0;
+		}
+	}
+
+	displayImg();	//출력
+}
+
+///////////////
+//히스토그램을 이용한 화소점 처리
+///////////////
+//산술연산
+void strech() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+	//최소, 최대 명도값 구하기
+	int low = 255;	//최대에서 점점 낮아지도록
+	int high = 0;	//최소에서 점점 높아지도록
+
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			if (inImg[i][k] <= low)
+				low = inImg[i][k];
+		}
+	}
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			if (inImg[i][k] > high)
+				high = inImg[i][k];
+		}
+	}
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			if (inImg[i][k] >= high)
+				outImg[i][k] = 255;
+			else if (inImg[i][k] <= low)
+				outImg[i][k] = 0;
+			else
+				outImg[i][k] = (unsigned char)(((double)(inImg[i][k] - low) / (high - low)) * 255);
+		}
+	}
+
+	displayImg();	//출력
+}
+
+//평활화 기업(Equalized)
+void equalized() {
+	if (inImg == NULL) {
+		MessageBox(hwnd, L"파일을 먼저 불러오세요", L"출력창", NULL);
+		return;	//파일 안불러왔으면 되돌아가기
+	}
+
+	freeOutputImg();		//출력으로 썻던 가상메모리 초기화
+
+	outL = inL;
+	outImg = malloc2D(outL);	//출력할이미지 배열 생성
+
+
+	//1단계, 히스토그램 생성
+	int* hist = (int*)malloc(outL * sizeof(int));	//사진 한변의 길이만큼 배열 생성
+	unsigned char iMax = 0;	//최대 명도값
+
+	//hist 내부값 초기화
+	for (int i = 0; i < 256; i++)
+		hist[i] = 0;
+
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			for (int m = 0; m < 256; m++) {
+				if (inImg[i][k] == m) {
+					hist[m]++;
+					break;
+				}
+			}
+			if (inImg[i][k] > iMax)
+				iMax = inImg[i][k];
+		}
+	}
+
+	//2단계, 누적합 생성
+	int* sum = (int*)malloc(outL * sizeof(int));
+	//sum 내부값 초기화
+	for (int i = 0; i < 256; i++) {
+		sum[i] = 0;
+	}
+
+	for (int i = 0; i < 256; i++) {
+		for (int o = 0; o <= i; o++) {
+			sum[i] += hist[o];
+		}
+	}
+
+	//3단계, 정규화
+	int* n = (int*)malloc(outL * sizeof(int));
+
+	for (int i = 0; i < 256; i++) {
+		n[i] = ((double)sum[i] / pow(outL, 2)) * iMax;
+	}
+
+	//원본이미지 -> 출력이미지에 덮어씌우기
+	for (int i = 0; i < outL; i++) {
+		for (int k = 0; k < outL; k++) {
+			for (int m = 0; m < 256; m++) {
+				if (inImg[i][k] == m) {
+					outImg[i][k] = n[m];
+					break;
+				}
+			}
+		}
+	}
+
+	displayImg();	//출력
+}
