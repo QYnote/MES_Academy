@@ -750,7 +750,79 @@ namespace Mission001
 
 		//히스토그램
 		//평활화 기업(Equalized)
-		static void equalized() { 
+		static void equalized()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			outL = inL;
+			outImg = new byte[outL, outL];     //출력할이미지 배열 생성
+
+
+			//1단계, 히스토그램 생성
+			int[] hist = new int[255];
+			byte iMax = 0;
+
+			//hist 내부값 초기화
+			for (int i = 0; i < 255; i++)
+				hist[i] = 0;
+
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					for (int m = 0; m < 255 ; m++)
+					{
+						if (inImg[i,k] == m)
+						{
+							hist[m] += 1;
+							break;
+						}
+					}
+					if (inImg[i,k] > iMax)
+						iMax = inImg[i,k];
+				}
+			}
+
+			//2단계, 누적합 생성
+			int[] sum = new int[255];
+
+			//sum 내부값 초기화
+			for (int i = 0; i < 255; i++)
+				sum[i] = 0;
+
+			for (int i = 0; i < 255; i++)
+				for (int o = 0; o <= i; o++)
+					sum[i] += hist[o];
+
+			//3단계, 정규화
+			int[] n = new int[255];
+			
+			for (int i = 0; i <255; i++)
+			{
+				n[i] = (int) (sum[i] / Math.Pow(outL,2) * iMax);
+			}
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					for (int m = 0; m < 255; m++)
+					{
+						if (inImg[i,k] == m)
+						{
+							outImg[i,k] = (byte) n[m];
+							break;
+						}
+					}
+				}
+			}
+
+			displayImg();   //출력
 		}
 	}
 
