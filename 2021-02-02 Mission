@@ -1,0 +1,758 @@
+using System;
+using System.IO;
+
+namespace Mission001
+{
+    class Program
+    {
+		//전역변수
+		static int inL = 0, outL = 0;
+		static byte[,] inImg = null, outImg = null;
+		static string fileAdress;
+
+
+		//메인
+		static void Main(string[] args)
+        {
+			char select = '0';
+
+
+			while (select != 'x' && select != 'X')
+			{   //프로그램 종료 전까지 계속 실행
+				mainMenu();
+				select = Console.ReadKey().KeyChar;
+
+				switch (select)
+				{
+					case 'x':	case 'X':           //프로그램 종료
+						Console.WriteLine("프로그램을 종료합니다.");
+						break;
+					case 'o':	case 'O':           //파일 열기
+						Console.WriteLine("파일을 불러옵니다.");
+						openImg();
+						break;
+					case '1':                           //원본출력
+						Console.WriteLine("원본을 출력합니다.");
+						origin();
+						break;
+					case '2':                           //화소 점처리
+						Console.WriteLine("화소점처리를 합니다.");
+						menu2();
+						break;
+					case '3':                           //기하학 처리
+						Console.WriteLine("기하학를 합니다.");
+						menu3();
+						break;
+					case '4':                           //히스토그램
+						Console.WriteLine("히스토그램을 이용한 화소점처리를 합니다.");
+						menu4();
+						break;
+					default:
+						Console.WriteLine("잘못 입력하셨습니다.");
+						break;
+				}
+
+			}
+
+		}
+
+		//공용함수
+		static void mainMenu()
+        {
+			Console.WriteLine("===================영상 처리 프로그램====================");
+			Console.WriteLine("원본을 먼저 가져와 주세요.");
+			Console.WriteLine("O. 파일 가져오기	s. 파일 저장	x.프로그램 종료");
+			Console.WriteLine("1. 원본	2. 화소점 처리	3. 기하학 처리");
+			Console.WriteLine("4. 히스토그램");
+		}
+
+		static void menu2()
+		{
+			int select2 = 0;
+
+			while (select2 != 'x' && select2 != 'X')
+			{
+				Console.WriteLine("===================화소 점처리====================");
+				Console.WriteLine("x.프로그램 종료");
+				Console.WriteLine("1. 밝기조절	2. 감마	3. 반전");
+				Console.WriteLine("4. 포스터라이징	5. 흑백	6. 강조");
+				select2 = Console.ReadKey().KeyChar;
+
+				switch (select2)
+				{
+					case 'x':		case 'X':           //화소점처리 종료
+						Console.WriteLine("이전메뉴로 되돌아갑니다..");
+						break;
+
+					case '1':                           //밝기조절
+						Console.WriteLine("밝기를 조절합니다.");
+						bright();
+						select2 = 'x';
+						break;
+
+					case '2':                           //감마
+						Console.WriteLine("감마 효과를 줍니다.");
+						gamma();
+						select2 = 'x';
+						break;
+
+					case '3':                           //반전
+						Console.WriteLine("반전 시킵니다.");
+						reverse();
+						select2 = 'x';
+						break;
+
+					case '4':                           //포스터라이징
+						Console.WriteLine("포스터라이징 시킵니다.");
+						posterising();
+						select2 = 'x';
+						break;
+
+					case '5':                           //흑백
+						Console.WriteLine("흑백효과를 줍니다.");
+						blackWhite();
+						select2 = 'x';
+						break;
+
+					case '6':                           //범위강조
+						Console.WriteLine("강조시킵니다.");
+						focus();
+						select2 = 'x';
+						break;
+
+					default:
+						Console.WriteLine("잘못 입력하셨습니다.");
+						break;
+				}
+			}
+		}
+		
+		static void menu3()
+		{
+			int select3 = 0;
+
+			while (select3 != 'x' && select3 != 'X')
+			{
+				Console.WriteLine("===================기하학 처리====================");
+				Console.WriteLine("x.프로그램 종료");
+				Console.WriteLine("1. 확대	2. 축소	3. 이동");
+				Console.WriteLine("4. 미러	5. 회전");
+				select3 = Console.ReadKey().KeyChar;
+
+				switch (select3)
+				{
+					case 'x': 	case 'X':           //화소점처리 종료
+						Console.WriteLine("이전메뉴로 되돌아갑니다..");
+						break;
+
+					case '1':                           //확대
+						Console.WriteLine("확대시킵니다.");
+						zoomIn();
+						select3 = 'x';
+						break;
+
+					case '2':                           //축소
+						Console.WriteLine("축소시킵니다.");
+						zoomOut();
+						select3 = 'x';
+						break;
+
+					case '3':                           //이동
+						Console.WriteLine("이동시킵니다.");
+						move();
+						select3 = 'x';
+						break;
+
+					case '4':                           //미러
+						Console.WriteLine("뒤집습니다.");
+						mir();
+						select3 = 'x';
+						break;
+
+					case '5':                           //회전
+						Console.WriteLine("회전시킵니다.");
+						rotate();
+						select3 = 'x';
+						break;
+
+					default:
+						Console.WriteLine("잘못 입력하셨습니다.");
+						break;
+				}
+
+			}
+		}
+
+		static void menu4()
+		{
+			int select4 = 0;
+
+			while (select4 != 'x' && select4 != 'X')
+			{
+				Console.WriteLine("===================히스토그램을 이용한 화소점 처리 ====================");
+				Console.WriteLine("x.프로그램 종료");
+				Console.WriteLine("1. 산술연산(보수중)	2. 평활화	3. 명세화");
+				select4 = Console.ReadKey().KeyChar;
+
+				switch (select4)
+				{
+					case '2':                           //
+						Console.WriteLine("평활화를 이용합니다.");
+						equalized();
+						select4 = 'x';
+						break;
+
+					default:
+						Console.WriteLine("잘못 입력하셨습니다.");
+						break;
+				}
+
+			}
+		}
+
+		static void openImg()
+        {
+			
+			Console.Write("오픈할 파일명 : ");
+			string fileName = Console.ReadLine();
+			fileAdress = "C:/img/RAW/Pet_RAW(squre)/Pet_RAW(512x512)/" + fileName + ".raw";
+
+			BinaryReader br = new BinaryReader(File.Open(fileAdress, FileMode.Open));
+
+			//사진 크기 확인 & inImg에 배열 생성
+			long fileSize = new FileInfo(fileAdress).Length;
+
+			inL = (int) Math.Sqrt(fileSize);
+			inImg = new byte[inL, inL];	//메모리 할당
+			
+			for(int i=0; i < inL; i++)
+            {
+				for (int k=0; k < inL; k++)
+                {
+					inImg[i, k] = br.ReadByte();
+                }
+            }
+
+			br.Close();
+
+			Console.WriteLine("\n원본 이미지를 가져왔습니다.");
+			origin();
+		}
+
+		static void displayImg()
+		{
+			Console.Clear();      //화면 초기화
+			string charMap = " .,:;ox%#@";
+			int step = outL / 32; // 32 문자
+
+			for (int i = 0; i < outL; i += step)
+			{
+				for (int k = 0; k < outL; k += step)
+				{
+					int entry = (int)((255 - outImg[i, k]) * 10.0 / 256); // 0~9
+					Console.Write(charMap[entry]);
+				}
+				Console.WriteLine();
+			}
+
+		}
+
+		//영상처리 함수
+		static void origin()
+        {
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			outL = inL;
+			outImg = new byte[outL, outL];    //출력할이미지 배열 생성
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			//실제 출력 알고리즘
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					outImg[i,k] = inImg[i,k];
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		//화소점처리
+		//밝기
+		static void bright()
+		{   //밝기조절
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			int value = 0;
+			int select2 = 0;
+
+			//밝게, 어둡게 선택하기
+			while (true)
+			{
+				Console.WriteLine("");
+				Console.WriteLine("옵션을 선택해 주세요.");
+				Console.WriteLine("1. 밝게	2. 어둡게");
+
+				select2 = Console.ReadKey().KeyChar;
+
+				if (select2 != '1' && select2 != '2')
+					Console.WriteLine("잘못 입력하셨습니다.");
+
+				if (select2 == '1' || select2 == '2')
+					break;
+			}
+
+			//수치 입력하기
+			while (true)
+			{
+				Console.WriteLine();
+				Console.WriteLine("조절 값을 입력해주세요(1 ~ 254)");
+
+				value = int.Parse(Console.ReadLine());
+
+				if (value <= 0 || value >= 255)
+				{
+					if (value <= 0)
+						Console.WriteLine("너무 낮습니다.");
+					else
+						Console.WriteLine("너무 높습니다.");
+				}
+				if (value > 0 && value < 255)
+					break;
+			}
+
+
+			//출력 준비
+			outL = inL;
+			outImg = new byte[outL,outL];    //출력할이미지 배열 생성
+
+			//출력이미지 변환
+			switch (select2)
+			{
+				case '1':   //밝게
+					for (int i = 0; i < outL; i++)
+					{
+						for (int k = 0; k < outL; k++)
+						{
+							if (inImg[i,k] + value > 255)
+								outImg[i,k] = 255;
+							else
+								outImg[i,k] = (byte) (inImg[i,k] + value);
+						}
+					}
+					break;
+
+				case '2':   //어둡게
+					value *= -1;    //어두워 지도록 수치값 음수로 변환
+					for (int i = 0; i < outL; i++)
+					{
+						for (int k = 0; k < outL; k++)
+						{
+							if (inImg[i,k] + value < 0)
+								outImg[i,k] = 0;
+							else
+								outImg[i,k] = (byte) (inImg[i,k] + value);
+						}
+					}
+					break;
+
+				default:
+					Console.WriteLine("무언가가 잘못되었습니다.\n 제작자에게 문의하세요.");
+
+					break;
+			}
+
+			displayImg();   //출력
+		}
+
+		//감마
+		static void gamma()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			double value = 0;
+
+			//수치 입력하기
+			while (true)
+			{
+				Console.WriteLine("");
+				Console.WriteLine("조절 값을 입력해주세요(0 ~ 5)");
+
+				value = double.Parse(Console.ReadLine());
+
+				if (value < 0 || value > 5)
+				{
+					if (value < 0)
+						Console.WriteLine("너무 낮습니다.");
+					else if (value > 5)
+						Console.WriteLine("너무 높습니다.");
+				}
+				if (value >= 0 && value <= 5)
+					break;
+			}
+
+			outL = inL;
+			outImg = new byte[outL, outL];    //출력할이미지 배열 생성
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					outImg[i,k] = (byte) (255 * Math.Pow(((double)inImg[i,k] / 255), value));
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		//반전
+		static void reverse()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			outL = inL;
+			outImg = new byte[outL, outL];     //출력할이미지 배열 생성
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					outImg[i, k] = (byte)(255 - inImg[i, k]);
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		//포스터라이징
+		static void posterising()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			outL = inL;
+			outImg = new byte[outL, outL];     //출력할이미지 배열 생성
+
+			int cutLevel = 32;      //경계값
+			int cut = 255 / cutLevel;   //나눈수
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					if (inImg[i, k] < 0)                    //버그 확인겸 임시 코드, 삭제해도 무방할것으로 예상
+						outImg[i, k] = 0;
+					else if (inImg[i, k] > cut * cutLevel)  //경계값 * 나눈수 < inImg < 255 사이일때 inImg = 255
+						outImg[i, k] = 255;
+					else
+					{
+						for (int m = 0; m < cut; m++)
+						{													//0부터 경계값으로 나눈 수만큼 for 반복
+							if (inImg[i, k] < cutLevel * (m + 1))
+							{												//ex)0~31 = 32로, 32~63 = 64로 하위숫자를 위에 경계구간으로 올림
+								outImg[i, k] = (byte)(cutLevel * (m + 1));  //제일 작은 구간부터 제일 큰구간까지 구별
+								break;									    //outImg에 입력이 되고 다음구간에는 속하지 않는다면 for(m)나가기
+							}
+						}
+					}
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		//흑백
+		static void blackWhite()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			outL = inL;
+			outImg = new byte[outL, outL];     //출력할이미지 배열 생성
+											   //원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					if (inImg[i,k] > 127)
+						outImg[i,k] = 255;
+					else
+						outImg[i,k] = 0;
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		//범위 강조
+		static void focus()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			outL = inL;
+			outImg = new byte[outL, outL];     //출력할이미지 배열 생성
+
+			int focusMin = 200;
+			int focusMax = 250;
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					if (inImg[i,k] < focusMax && inImg[i,k] > focusMin)
+						outImg[i,k] = 255;
+					else
+						outImg[i,k] = inImg[i,k];
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		//기하학 처리
+		//확대
+		static void zoomIn()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			double scale = 0;
+
+			Console.Write("몇배 확대하시겠습니까?");
+			scale = double.Parse(Console.ReadLine());  //확대할 배수 받아오기
+
+			/////////////////////////////
+			//소수점 입력 방지코드 짜기
+			//////////////////////////////
+
+			outL = (int) (inL * scale);     //출력 할 크기 배수만큼 증가
+			outImg = new byte[outL, outL];     //출력할이미지 배열 생성
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{
+					outImg[i,k] = inImg[(int)(i / scale),(int)(k / scale)];
+				}
+			}
+
+			displayImg();   //출력
+
+		}
+
+		//축소
+		static void zoomOut()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			double scale = 0;
+			Console.Write("몇배 축소하시겠습니까?");
+			scale = double.Parse(Console.ReadLine());  //축소할 배수 받아오기
+
+			/////////////////////////////
+			//소수점 입력 방지코드 짜기
+			//////////////////////////////
+
+			outL = (int) (inL / scale);     //출력 할 크기 배수만큼 감소
+			outImg = new byte[outL, outL];     //출력 할 이미지 배열 생성
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < inL; i++)
+			{
+				for (int k = 0; k < inL; k++)
+				{
+					outImg[(int)(i / scale),(int)(k / scale)] = inImg[i,k];
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		//이동
+		static void move()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			//이동 좌표 받아오기
+			int row = 0;
+			int high = 0;
+			Console.WriteLine("얼마나 이동하시겠습니까?");
+			Console.WriteLine("가로 : ");
+			row = int.Parse(Console.ReadLine());  //이동할 가로값
+			Console.WriteLine("세로 : ");
+			high = int.Parse(Console.ReadLine());  //이동할 가로값
+
+			outL = inL;
+			outImg = new byte[outL, outL];     //출력 할 이미지 배열 생성
+
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int i = 0; i < outL; i++)
+			{
+				for (int k = 0; k < outL; k++)
+				{   //outL - 거리 : '거리'만큼 이동했기 때문에 outL 이상의 범위는 '거리'만큼 안씀
+					if (i < high || k < row)
+						outImg[i,k] = 0;
+					else
+						outImg[i,k] = inImg[i - high,k - row];
+					//row,k 가로 high,i 세로
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		static void mir()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			outL = inL;
+			outImg = new byte[outL, outL];     //출력할이미지 배열 생성
+
+
+			int selectMir = 0;
+
+			//가로 세로 선택
+			while (true)
+			{
+				Console.WriteLine("");
+				Console.WriteLine("옵션을 선택해 주세요.");
+				Console.WriteLine("1. 좌우반전	2. 상하반전");
+
+				selectMir = Console.ReadKey().KeyChar;
+
+				if (selectMir != '1' && selectMir != '2')
+					Console.WriteLine("잘못 입력하셨습니다.");
+
+				if (selectMir == '1' || selectMir == '2')
+					break;
+			}
+
+            //원본이미지 -> 출력이미지에 덮어씌우기
+            switch (selectMir)
+            {
+				case '1'://좌우반전
+					for (int i = 0; i < outL; i++)
+					{
+						for (int k = 0; k < outL; k++)
+						{
+							outImg[i, k] = inImg[i, outL - k - 1];
+						}
+					}
+					break;
+
+				case '2'://상하반전
+					for (int i = 0; i < outL; i++)
+					{
+						for (int k = 0; k < outL; k++)
+						{
+							outImg[i, k] = inImg[outL - i - 1, k];
+						}
+					}
+					break;
+			}
+			
+			displayImg();   //출력
+		}
+
+		//정회전 돌리고 튀어나온 부분 자르기
+		static void rotate()
+		{
+			if (inImg == null)
+			{
+				Console.WriteLine("파일을 먼저 불러오세요");
+				return; //파일 안불러왔으면 되돌아가기
+			}
+
+			//중심점 기준
+			double controlPointX = outL / 2;
+			double ControlPointY = outL / 2;
+			////왼쪽아래점 기준
+			//int controlPointX = 0;
+			//int ControlPointY = outL;
+
+
+			double degree = 30; //각도
+								//이동전 좌표
+			int mX, mY;
+
+			double radian = degree * Math.PI / 180;
+			double ca = Math.Cos(radian);
+			double sa = Math.Sin(radian);
+
+			outL = inL;
+			outImg = new byte[outL, outL];     //출력할이미지 배열 생성
+
+			//우측으로 돌리기
+			//원본이미지 -> 출력이미지에 덮어씌우기
+			for (int high = 0; high < inL; high++)
+			{
+				for (int row = 0; row < inL; row++)
+				{
+					mX = (int)(controlPointX + ((double)high - ControlPointY) * sa + ((double)row - controlPointX) * ca);
+					mY = (int)(ControlPointY + ((double)high - ControlPointY) * ca - ((double)row - controlPointX) * sa);
+
+					if ((mY >= 0 && mY < outL) && (mX >= 0 && mX < outL))
+						outImg[high,row] = inImg[mY,mX];
+					else
+						outImg[high,row] = 0;
+				}
+			}
+
+			displayImg();   //출력
+		}
+
+		//히스토그램
+		//평활화 기업(Equalized)
+		static void equalized() { 
+		}
+	}
+
+
+}
