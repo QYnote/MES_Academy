@@ -1,0 +1,1093 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO;
+
+namespace Project02_영상처리_Beta4__GUI
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        /*////////////
+         전역 변수부
+         ///////////*/
+        static byte[,] inImg, outImg;
+        static int inH, inW, outH, outW;
+        static string fileName;
+        static Bitmap paper; // 그림을 콕콕 찍을 종이
+
+        
+
+        private void 화소점처리ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void 열기ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openImg();
+        }
+
+        //화소 점처리
+        private void 밝게ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bright_white();
+        }
+
+        private void 어둡게ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bright_black();
+        }
+        private void 반전이미지ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            reverse_Img();
+        }
+
+        private void 감마ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            gamma();
+        }
+
+        private void 포스터라이징ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            posterising();
+        }
+
+        private void 흑백ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bw();
+        }
+
+        private void 범위강조ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            focus();
+        }
+
+        //기하학처리
+        private void 확대ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            zoom_in_Img();
+        }
+
+        private void 축소ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            zoom_out_Img();
+        }
+
+        private void 이동ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            move_Img();
+        }
+
+        //화소영역처리
+        private void 엠보싱ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            emboss_image();
+        }
+
+        private void 블러링ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            blurr_image();
+        }
+
+        private void 가우시안필터링ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            gaussian_image();
+        }
+
+        private void 샤프닝ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            sharp_image();
+        }
+
+        private void 고주파필터링ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            hFilter_image();
+        }
+
+        //화소영역처리 마스크 5x5
+        private void 엠보싱5x5ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            emboss5_image();
+        }
+
+        private void 수직ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            edgeHigh_image();
+        }
+
+        private void 수평ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            edgeRow_image();
+        }
+
+            /*//////////////
+             * 공통 함수부 
+             /////////////*/
+            void openImg()
+        {
+            OpenFileDialog ofd = new OpenFileDialog();  //객체 생성?
+            ofd.ShowDialog();                           //대화상자 뜨기
+                                                        //Console.Write("오픈할 파일명 -->"); string tmpName = Console.ReadLine();
+
+            fileName = ofd.FileName;    //파일명 경로입력
+            // fileName = "c:/images/raw/" + tmpName + ".raw";
+
+
+            BinaryReader br = new BinaryReader(File.Open(fileName, FileMode.Open));
+            // 파일 크기 알아내기 (?)
+            long fsize = new FileInfo(fileName).Length;
+            // 중요! 입력이미지의 높이, 폭 알아내기
+            inH = inW = (int)Math.Sqrt(fsize);
+            inImg = new byte[inH, inW]; // 메모리 할당
+            for (int i = 0; i < inH; i++)
+                for (int k = 0; k < inW; k++)
+                    inImg[i, k] = br.ReadByte();
+            br.Close();
+
+            equal_img();
+        }
+        
+        void displayImg()
+        {
+            //벽(창 전체 크기), 게시판(창 내부 크기), 종이(그림) 크기 조절
+            paper = new Bitmap(outH, outW); // 종이
+            pictureBox1.Size = new Size(outH, outW); // 캔버스
+            this.Size = new Size(outH + 100, outW + 100); // 벽
+
+            Color pen; // 펜(콕콕 찍을 용도)
+            for (int i = 0; i < outH; i++)
+                for (int k = 0; k < outW; k++)
+                {
+                    byte data = outImg[i, k]; // 잉크(색상값)
+                    pen = Color.FromArgb(data, data, data); // 펜에 잉크 묻히기
+                    paper.SetPixel(k, i, pen); // 종이에 콕 찍기
+                }
+            pictureBox1.Image = paper; // 게시판에 종이를 붙이기.
+
+            toolStripStatusLabel1.Text = 
+                    outH.ToString() + "x" + outW.ToString() + " " + fileName;
+        }
+
+        double getValue()
+        {
+            SubForm sub = new SubForm();    //subform 준비
+            if (sub.ShowDialog() == DialogResult.Cancel)
+                return 0;
+
+            double value = (double)sub.num_UD_Value.Value;
+
+            return value;
+        }
+
+        
+
+        /*//////////////
+         * 영상처리 함수부 
+         /////////////*/
+
+        //원본
+        void equal_img()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                {
+                    outImg[i, k] = inImg[i, k];
+                }
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        //화소점처리
+        //반전
+        void reverse_Img()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                {
+                    outImg[i, k] = (byte) (255 - inImg[i, k]);
+                }
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        void bright_white()
+        {
+            if (inImg == null)
+                return;
+
+            int value = (int) getValue();
+
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < outW; i++)
+            {
+                for (int k = 0; k < outH; k++)
+                {
+                    if (inImg[i, k] + value > 255)
+                        outImg[i, k] = 255;
+                    else
+                        outImg[i, k] = (byte)(inImg[i, k] + value);
+                }
+            }
+            
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        
+
+        void bright_black()
+        {
+            if (inImg == null)
+                return;
+
+            int value = (int)getValue();
+
+            value *= -1;    //어두워 지도록 수치값 음수로 변환
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < outW; i++)
+            {
+                for (int k = 0; k < outH; k++)
+                {
+                    if (inImg[i, k] + value < 0)
+                        outImg[i, k] = 0;
+                    else
+                        outImg[i, k] = (byte)(inImg[i, k] + value);
+                }
+            }
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        void gamma()
+        {
+            if (inImg == null)
+                return;
+
+            double value = getValue();
+
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < outW; i++)
+            {
+                for (int k = 0; k < outH; k++)
+                {
+                    outImg[i, k] = (byte)(255 * Math.Pow(((double)inImg[i, k] / 255), value));
+                }
+            }
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        
+
+        //포스터라이징
+        void posterising()
+        {
+            if (inImg == null)
+                return;
+
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            int cutLevel = (int) getValue();       //경계값
+            int cut = 255 / cutLevel;   //나눈수
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < outW; i++)
+            {
+                for (int k = 0; k < outH; k++)
+                {
+
+                    for (int m = 0; m < cut; m++)
+                    {                                                   //0부터 경계값으로 나눈 수만큼 for 반복
+                        if (inImg[i, k] < cutLevel * (m + 1))
+                        {                                               //ex)0~31 = 32로, 32~63 = 64로 하위숫자를 위에 경계구간으로 올림
+                            if (cutLevel * (m + 1) > 255)
+                                outImg[i, k] = 255;
+                            else
+                                outImg[i, k] = (byte)(cutLevel * (m + 1));  //제일 작은 구간부터 제일 큰구간까지 구별
+                            break;                                      //outImg에 입력이 되고 다음구간에는 속하지 않는다면 for(m)나가기
+                        }
+                    }
+                    
+                }
+            }
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        void bw()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+
+            outImg = new byte[outW, outH];
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                {
+                    if (inImg[i, k] > 127)
+                        outImg[i, k] = 255;
+                    else
+                        outImg[i, k] = 0;
+                }
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+
+        void focus()
+        {
+            if (inImg == null)
+                return;
+
+            int focusMax = (int)getValue();
+            int focusMin = (int)getValue();
+
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+
+            outImg = new byte[outW, outH];
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < outW; i++)
+            {
+                for (int k = 0; k < outH; k++)
+                {
+                    if (inImg[i, k] < focusMax && inImg[i, k] > focusMin)
+                        outImg[i, k] = 255;
+                    else
+                        outImg[i, k] = inImg[i, k];
+                }
+            }
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        
+
+        //기하학처리
+        //확대
+        void zoom_in_Img()
+        {
+            if (inImg == null)
+                return;
+
+            double scale = getValue();
+
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = (int) (inH * scale); outW = (int)(inW * scale);
+            outImg = new byte[outW, outH];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < outW; i++)
+            {
+                for (int k = 0; k < outH; k++)
+                {
+                    outImg[i, k] = inImg[(int)(i / scale), (int)(k / scale)];
+                }
+            }
+            /////////////////////////////////////////////
+            displayImg();
+        }
+        
+        //축소
+        void zoom_out_Img()
+        {
+            if (inImg == null)
+                return;
+
+            double scale = getValue();
+
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = (int)(inH / scale); outW = (int)(inW / scale);
+            outImg = new byte[outW, outH];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    outImg[(int)(i / scale), (int)(k / scale)] = inImg[i, k];
+                }
+            }
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        
+
+        //이동
+        void move_Img()
+        {
+            if (inImg == null)
+                return;
+
+            int high = (int)getValue(); //세로
+            int row = (int)getValue();  //가로
+
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+
+            outImg = new byte[outW, outH];
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            for (int i = 0; i < outW; i++)
+            {
+                for (int k = 0; k < outH; k++)
+                {   //outL - 거리 : '거리'만큼 이동했기 때문에 outL 이상의 범위는 '거리'만큼 안씀
+                    if (i < high || k < row)
+                        outImg[i, k] = 0;
+                    else
+                        outImg[i, k] = inImg[i - high, k - row];
+                    //row,k 가로 high,i 세로
+                }
+            }
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        //화소영역처리
+        //엠보싱
+        void emboss_image()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            //화소 여역처리
+            //!중요 마스크 결정
+            const int mSize = 3;
+            double[,] mask = { { -1.0, 0.0, 0.0 }, 
+                               {  0.0, 0.0, 0.0 }, 
+                               {  0.0, 0.0, 1.0 } };
+
+            //임시 입출력 메모리 할당
+            double[,] tmpInput = new double[inW + 2, inH + 2];  //위아래 1칸씩 추가공간 마련
+            double[,] tmpOutput = new double[outW, outH];
+
+            //임시 입력 중간값인 평균 값(127)으로 초기화
+            for (int i = 0; i < inW+2; i++)
+                for (int k = 0; k < inH+2; k++)
+                    tmpInput[i, k] = 127.0;
+            //입력 -> 임시 입력
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                    tmpInput[i+1, k+1] = inImg[i, k];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            double S = 0.0;
+
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    for( int m=0; m < mSize; m++)
+                    {
+                        for (int n= 0; n < mSize; n++)
+                        {
+                            S += tmpInput[i+m, k+m] * mask[m, n];
+                        }
+                    }
+                    tmpOutput[i, k] = S;
+                    S = 0.0;    //S초기화
+                }
+            }
+
+            //후처리 : mask의 합이 0이면 127 더하기
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    tmpOutput[i, k] += 127.0;
+                }
+            }
+
+            //임시 출력 -> 원래 출력
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    double d = tmpOutput[i, k];
+                    if (d > 255)
+                        d = 255;
+                    else if (d < 0)
+                        d = 0.0;
+                    else
+                        outImg[i, k] = (byte)d;
+                }
+            }
+
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        //블러링
+        void blurr_image()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            //화소 여역처리
+            //!중요 마스크 결정
+            const int mSize = 3;
+            double[,] mask = { { 1/9.0, 1/9.0, 1/9.0 },
+                               { 1/9.0, 1/9.0, 1/9.0 },
+                               { 1/9.0, 1/9.0, 1/9.0 } };
+
+            //임시 입출력 메모리 할당
+            double[,] tmpInput = new double[inW + 2, inH + 2];  //위아래 1칸씩 추가공간 마련
+            double[,] tmpOutput = new double[outW, outH];
+
+            //임시 입력 중간값인 평균 값(127)으로 초기화
+            for (int i = 0; i < inW + 2; i++)
+                for (int k = 0; k < inH + 2; k++)
+                    tmpInput[i, k] = 127.0;
+            //입력 -> 임시 입력
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                    tmpInput[i + 1, k + 1] = inImg[i, k];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            double S = 0.0;
+
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    for (int m = 0; m < mSize; m++)
+                    {
+                        for (int n = 0; n < mSize; n++)
+                        {
+                            S += tmpInput[i + m, k + n] * mask[m, n];
+                        }
+                    }
+                    tmpOutput[i, k] = S;
+                    S = 0.0;    //S초기화
+                }
+            }
+
+            //임시 출력 -> 원래 출력
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    double d = tmpOutput[i, k];
+                    if (d > 255)
+                        d = 255;
+                    else if (d < 0)
+                        d = 0.0;
+                    else
+                        outImg[i, k] = (byte)d;
+                }
+            }
+
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+
+        //가우시안
+        void gaussian_image()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            //화소 여역처리
+            //!중요 마스크 결정
+            const int mSize = 3;
+            double[,] mask = { { 1/16.0, 1/8.0, 1/16.0 },
+                               {  1/8.0, 1/4.0,  1/8.0 },
+                               { 1/16.0, 1/8.0, 1/16.0 } };
+
+            //임시 입출력 메모리 할당
+            double[,] tmpInput = new double[inW + 2, inH + 2];  //위아래 1칸씩 추가공간 마련
+            double[,] tmpOutput = new double[outW, outH];
+
+            //임시 입력 중간값인 평균 값(127)으로 초기화
+            for (int i = 0; i < inW + 2; i++)
+                for (int k = 0; k < inH + 2; k++)
+                    tmpInput[i, k] = 127.0;
+            //입력 -> 임시 입력
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                    tmpInput[i + 1, k + 1] = inImg[i, k];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            double S = 0.0;
+
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    for (int m = 0; m < mSize; m++)
+                    {
+                        for (int n = 0; n < mSize; n++)
+                        {
+                            S += tmpInput[i + m, k + n] * mask[m, n];
+                        }
+                    }
+                    tmpOutput[i, k] = S;
+                    S = 0.0;    //S초기화
+                }
+            }
+
+
+            //임시 출력 -> 원래 출력
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    double d = tmpOutput[i, k];
+                    if (d > 255)
+                        d = 255;
+                    else if (d < 0)
+                        d = 0.0;
+                    else
+                        outImg[i, k] = (byte)d;
+                }
+            }
+
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+
+        //샤프닝
+        void sharp_image()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            //화소 여역처리
+            //!중요 마스크 결정
+            const int mSize = 3;
+            double[,] mask = { { -1, -1, -1},
+                               { -1,  9, -1},
+                               { -1, -1, -1} };
+
+            //임시 입출력 메모리 할당
+            double[,] tmpInput = new double[inW + 2, inH + 2];  //위아래 1칸씩 추가공간 마련
+            double[,] tmpOutput = new double[outW, outH];
+
+            //임시 입력 중간값인 평균 값(127)으로 초기화
+            for (int i = 0; i < inW + 2; i++)
+                for (int k = 0; k < inH + 2; k++)
+                    tmpInput[i, k] = 127.0;
+            //입력 -> 임시 입력
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                    tmpInput[i + 1, k + 1] = inImg[i, k];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            double S = 0.0;
+
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    for (int m = 0; m < mSize; m++)
+                    {
+                        for (int n = 0; n < mSize; n++)
+                        {
+                            S += tmpInput[i + m, k + n] * mask[m, n];
+                        }
+                    }
+                    tmpOutput[i, k] = S;
+                    S = 0.0;    //S초기화
+                }
+            }
+
+            //후처리 : mask의 합이 0이면 127 더하기
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    tmpOutput[i, k] += 127.0;
+                }
+            }
+
+            //임시 출력 -> 원래 출력
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    double d = tmpOutput[i, k];
+                    if (d > 255)
+                        d = 255;
+                    else if (d < 0)
+                        d = 0.0;
+                    else
+                        outImg[i, k] = (byte)d;
+                }
+            }
+
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        
+
+        //수직 엣지
+        void edgeHigh_image()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            //화소 여역처리
+            //!중요 마스크 결정
+            const int mSize = 3;
+            double[,] mask = { {  0, 0, 0},
+                               { -1, 1, 0},
+                               {  0, 0, 0} };
+
+            //임시 입출력 메모리 할당
+            double[,] tmpInput = new double[inW + 2, inH + 2];  //위아래 1칸씩 추가공간 마련
+            double[,] tmpOutput = new double[outW, outH];
+
+            //임시 입력 중간값인 평균 값(127)으로 초기화
+            for (int i = 0; i < inW + 2; i++)
+                for (int k = 0; k < inH + 2; k++)
+                    tmpInput[i, k] = 127.0;
+            //입력 -> 임시 입력
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                    tmpInput[i + 1, k + 1] = inImg[i, k];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            double S = 0.0;
+
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    for (int m = 0; m < mSize; m++)
+                    {
+                        for (int n = 0; n < mSize; n++)
+                        {
+                            S += tmpInput[i + m, k + n] * mask[m, n];
+                        }
+                    }
+                    tmpOutput[i, k] = S;
+                    S = 0.0;    //S초기화
+                }
+            }
+
+            //후처리 : mask의 합이 0이면 127 더하기
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    tmpOutput[i, k] += 127.0;
+                }
+            }
+
+            //임시 출력 -> 원래 출력
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    double d = tmpOutput[i, k];
+                    if (d > 255)
+                        d = 255;
+                    else if (d < 0)
+                        d = 0.0;
+                    else
+                        outImg[i, k] = (byte)d;
+                }
+            }
+
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        //수평 엣지
+        void edgeRow_image()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            //화소 여역처리
+            //!중요 마스크 결정
+            const int mSize = 3;
+            double[,] mask = { { 0, -1, 0},
+                               { 0,  1, 0},
+                               { 0,  0, 0} };
+
+            //임시 입출력 메모리 할당
+            double[,] tmpInput = new double[inW + 2, inH + 2];  //위아래 1칸씩 추가공간 마련
+            double[,] tmpOutput = new double[outW, outH];
+
+            //임시 입력 중간값인 평균 값(127)으로 초기화
+            for (int i = 0; i < inW + 2; i++)
+                for (int k = 0; k < inH + 2; k++)
+                    tmpInput[i, k] = 127.0;
+            //입력 -> 임시 입력
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                    tmpInput[i + 1, k + 1] = inImg[i, k];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            double S = 0.0;
+
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    for (int m = 0; m < mSize; m++)
+                    {
+                        for (int n = 0; n < mSize; n++)
+                        {
+                            S += tmpInput[i + m, k + n] * mask[m, n];
+                        }
+                    }
+                    tmpOutput[i, k] = S;
+                    S = 0.0;    //S초기화
+                }
+            }
+
+            //후처리 : mask의 합이 0이면 127 더하기
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    tmpOutput[i, k] += 127.0;
+                }
+            }
+
+            //임시 출력 -> 원래 출력
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    double d = tmpOutput[i, k];
+                    if (d > 255)
+                        d = 255;
+                    else if (d < 0)
+                        d = 0.0;
+                    else
+                        outImg[i, k] = (byte)d;
+                }
+            }
+
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        //고주파 필터링
+        void hFilter_image()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            //화소 여역처리
+            //!중요 마스크 결정
+            const int mSize = 3;
+            double[,] mask = { { -1/9.0, -1/9.0, -1/9.0 },
+                               { -1/9.0,  8/9.0, -1/9.0 },
+                               { -1/9.0, -1/9.0, -1/9.0 } };
+
+            //임시 입출력 메모리 할당
+            double[,] tmpInput = new double[inW + 2, inH + 2];  //위아래 1칸씩 추가공간 마련
+            double[,] tmpOutput = new double[outW, outH];
+
+            //임시 입력 중간값인 평균 값(127)으로 초기화
+            for (int i = 0; i < inW + 2; i++)
+                for (int k = 0; k < inH + 2; k++)
+                    tmpInput[i, k] = 127.0;
+            //입력 -> 임시 입력
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                    tmpInput[i + 1, k + 1] = inImg[i, k];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            double S = 0.0;
+
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    for (int m = 0; m < mSize; m++)
+                    {
+                        for (int n = 0; n < mSize; n++)
+                        {
+                            S += tmpInput[i + m, k + n] * mask[m, n];
+                        }
+                    }
+                    tmpOutput[i, k] = S;
+                    S = 0.0;    //S초기화
+                }
+            }
+
+            //임시 출력 -> 원래 출력
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    double d = tmpOutput[i, k];
+                    if (d > 255)
+                        d = 255;
+                    else if (d < 0)
+                        d = 0.0;
+                    else
+                        outImg[i, k] = (byte)d;
+                }
+            }
+
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+
+        //엠보싱
+        void emboss5_image()
+        {
+            if (inImg == null)
+                return;
+            // 중요! 출력이미지의 높이, 폭을 결정  --> 알고리즘에 영향
+            outH = inH; outW = inW;
+            outImg = new byte[outW, outH];
+
+            //화소 여역처리
+            //!중요 마스크 결정
+            const int mSize = 5;
+            double[,] mask = { { -1.0, 0.0, 0.0, 0.0, 0.0 },
+                               {  0.0, 0.0, 0.0, 0.0, 0.0 },
+                               {  0.0, 0.0, 0.0, 0.0, 0.0 },
+                               {  0.0, 0.0, 0.0, 0.0, 0.0 },
+                               {  0.0, 0.0, 0.0, 0.0, 1.0 } };
+
+            //임시 입출력 메모리 할당
+            double[,] tmpInput = new double[inW + 4, inH + 4];  //위아래 1칸씩 추가공간 마련
+            double[,] tmpOutput = new double[outW, outH];
+
+            //임시 입력 중간값인 평균 값(127)으로 초기화
+            int imsiSum = 0;
+            byte imsiAvg = 0;
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    imsiSum += inImg[i, k];
+                }
+            }
+            imsiAvg = (byte) (imsiSum / (inW * inH));
+           
+            for (int i = 0; i < inW + 4; i++)
+                for (int k = 0; k < inH + 4; k++)
+                    tmpInput[i, k] = imsiAvg;
+            //입력 -> 임시 입력
+            for (int i = 0; i < inW; i++)
+                for (int k = 0; k < inH; k++)
+                    tmpInput[i + 2, k + 2] = inImg[i, k];
+
+            // *** 진짜 영상처리 알고리즘을 구현 ***
+            double S = 0.0;
+
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    //여기까지가 tmpInput 좌표조정
+                    for (int m = 0; m < mSize; m++)
+                    {
+                        for (int n = 0; n < mSize; n++)
+                        {
+                            S += tmpInput[i + m, k + n] * mask[m, n];
+                        }
+                    }
+                    tmpOutput[i, k] = S;
+                    S = 0.0;    //S초기화
+                }
+            }
+
+            //후처리 : mask의 합이 0이면 127 더하기
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    tmpOutput[i, k] += 127.0;
+                }
+            }
+
+            //임시 출력 -> 원래 출력
+            for (int i = 0; i < inW; i++)
+            {
+                for (int k = 0; k < inH; k++)
+                {
+                    double d = tmpOutput[i, k];
+                    if (d > 255)
+                        d = 255;
+                    else if (d < 0)
+                        d = 0.0;
+                    else
+                        outImg[i, k] = (byte)d;
+                }
+            }
+
+
+            /////////////////////////////////////////////
+            displayImg();
+        }
+    }
+}
