@@ -227,7 +227,7 @@ namespace Project01
                     {
                         if (inImg[rgb, i, k] + value > 255)
                             outImg[rgb, i, k] = 255;
-                        else if (outImg[rgb, i, k] < 0)
+                        else if (inImg[rgb, i, k] + value < 0)
                             outImg[rgb, i, k] = 0;
                         else
                         outImg[rgb, i, k] = (byte)(inImg[rgb, i, k] + value);
