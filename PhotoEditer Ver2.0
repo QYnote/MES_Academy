@@ -314,20 +314,17 @@ namespace Project01
 
             int cutLevel = 40;       //경계값
             int cut = 255 / cutLevel;   //나눈수
-            // *** 진짜 영상처리 알고리즘을 구현 ***
+            // *** 진짜 영상처리 알고리즘을 구현 ***                             //오류있음
             for (int rgb = 0; rgb < RGB; rgb++)
                 for (int i = 0; i < outH; i++)
                     for (int k = 0; k < outW; k++)
-                        for (int m = 0; m < cut; m++)
-                            //0부터 경계값으로 나눈 수만큼 for 반복
-                            if (inImg[rgb, i, k] < cutLevel * (m + 1))
-                            {                                               //ex)0~31 = 32로, 32~63 = 64로 하위숫자를 위에 경계구간으로 올림
-                                if (cutLevel * (m + 1) > 255)
-                                    outImg[rgb, i, k] = 255;
-                                else
-                                    outImg[rgb, i, k] = (byte)(cutLevel * (m + 1));  //제일 작은 구간부터 제일 큰구간까지 구별
-                                break;                                      //outImg에 입력이 되고 다음구간에는 속하지 않는다면 for(m)나가기
-                            }
+                        for (int m = 0; m < cut; m++) {
+                            if (cutLevel * (m + 1) > 255)
+                                outImg[rgb, i, k] = 255;
+                            else
+                                outImg[rgb, i, k] = (byte)(cutLevel * (m + 1));
+                            break;
+                        }
                     
             /////////////////////////////////////////////
             displayImg();
