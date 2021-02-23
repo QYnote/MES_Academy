@@ -1,0 +1,185 @@
+using System;
+using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
+
+namespace Mission01
+{
+    class Program
+    {
+        static char select = '0';
+
+        static string DB1 = "Database = test00;";
+        static string DB2 = "Database = school_grade;";
+
+        //SQL Server 준비물
+        static string SQLSer_connstr = "Server = 192.168.56.104;" +
+            "Uid = winuser;" +
+            "PWD = 4321;";
+        static string SQLSer_ConnstrAll = "";
+        static SqlConnection SQLSer_conn;
+        static SqlCommand SQLSer_cmd;
+        static string SQLSer_sql;
+
+        //MySQL 준비물
+        static string MySQL_connstr = "Server = 192.168.56.104;" +
+            "Uid = winuser;" +
+            "PWD = 4321;";
+        static string MySQL_ConnstrAll = "";
+        static string MySQL_End = "Charset=UTF8";
+        static MySqlConnection MySQL_conn;
+        static MySqlCommand MySQL_cmd;
+        static string MySQL_sql;
+
+
+
+        static void Main(string[] args)
+        {
+            
+
+            while (select != 'x' && select != 'X')
+            {
+                Console.WriteLine("불러올 데이터를 선택하세요");
+                Console.WriteLine("1. 실험자 기록    2. 학생성적표");
+                Console.WriteLine("x. 프로그램 종료");
+
+                select = Console.ReadKey().KeyChar;
+
+                switch (select)
+                {
+                    case 'x':
+                    case 'X':
+                        Console.WriteLine("프로그램 종료");
+                        break;
+
+                    case '1':
+                        test();
+                        break;
+
+                    case '2':
+                        grade();
+                        break;
+
+                    default:
+                        Console.WriteLine("잘못 입력하셨습니다.");
+                        break;
+                }
+
+                SQLSer_ConnstrAll = "";
+            }
+
+        }
+
+        //공통함수
+        static void ready()
+        {
+            //SQL Server 준비
+            SQLSer_conn = new SqlConnection(SQLSer_ConnstrAll);
+            SQLSer_conn.Open();
+            SQLSer_cmd = new SqlCommand("", SQLSer_conn);
+
+            //MySQL 준비
+            MySQL_conn = new MySqlConnection(MySQL_ConnstrAll);
+            MySQL_conn.Open();
+            MySQL_cmd = new MySqlCommand("", MySQL_conn);
+        }
+
+        static void deliver()
+        {
+            SQLSer_cmd.CommandText = SQLSer_sql;
+            SQLSer_cmd.ExecuteNonQuery();
+
+            MySQL_cmd.CommandText = MySQL_sql;
+            MySQL_cmd.ExecuteNonQuery();
+        }
+
+
+        //입력 구역
+        static void grade()
+        {
+            SQLSer_ConnstrAll = SQLSer_connstr + DB2;
+            MySQL_ConnstrAll = MySQL_connstr + DB2 + MySQL_End;
+            ready();
+
+            while (true)
+            {
+                //물건 준비
+                string s_name, s_kor, s_math, s_eng;
+                Console.Write("이름 : "); s_name = Console.ReadLine();
+                if (s_name == "" || s_name == null)
+                    break;
+                Console.Write("국어 : "); s_kor = Console.ReadLine();
+                Console.Write("수학 : "); s_math = Console.ReadLine();
+                Console.Write("영어 : "); s_eng = Console.ReadLine();
+
+                //SQLServer 입력
+                            //INSERT INTO grade(s_name, s_kor, s_math, s_eng)
+                SQLSer_sql = "INSERT INTO grade(s_name, s_kor, s_math, s_eng) " +
+                   //VALUES('
+                    "VALUES('";
+                            //  aaa     ', '    80       ', '      90      ',       20     );
+                SQLSer_sql += s_name + "', '" + s_kor + "', '" + s_math + "', " + s_eng + ");";
+
+                //MySQL 입력
+                           //INSERT INTO grade(s_num, s_name, s_kor, s_math, s_eng) 
+                MySQL_sql = "INSERT INTO grade(s_num, s_name, s_kor, s_math, s_eng) " +
+                   //VALUES(NULL, '
+                    "VALUES(null, '";
+                           //  aaa     ', '    80       ', '      90      ',       20     );
+                MySQL_sql += s_name + "', '" + s_kor + "', '" + s_math + "', " + s_eng + ");";
+
+
+                //배송
+                deliver();
+            }
+
+            SQLSer_conn.Close();
+            MySQL_conn.Close();
+            Console.WriteLine("실행 확인");
+        }
+
+        static void test()
+        {
+            SQLSer_ConnstrAll = SQLSer_connstr + DB1;
+            MySQL_ConnstrAll = MySQL_connstr + DB1 + MySQL_End;
+            ready();
+
+            while (true)
+            {
+                //물건 준비
+                string t_startday, t_endday, t_name, t_age;
+                Console.Write("실험 시작일 : "); t_startday = Console.ReadLine();
+                if (t_startday == "" || t_startday == null)
+                    break;
+                Console.Write("실험 종료일 : "); t_endday = Console.ReadLine();
+                Console.Write("실험 대상자 : "); t_name = Console.ReadLine();
+                Console.Write("실험자 나이 : "); t_age = Console.ReadLine();
+
+                //SQLServer 입력
+                            //INSERT INTO profile_(t_startday, t_endday, t_name, t_age) 
+                SQLSer_sql = "INSERT INTO profile_(t_startday, t_endday, t_name, t_age) " +
+                   //VALUES('
+                    "VALUES('";
+                            //2021-02-23    ', '    2021-02-24  ', '      aaa     ',       20     );
+                SQLSer_sql += t_startday + "', '" + t_endday + "', '" + t_name + "', " + t_age + ");";
+
+                //MySQL 입력
+                           //INSERT INTO profile_(t_num, t_startday, t_endday, t_name, t_age) 
+                MySQL_sql = "INSERT INTO profile_(t_num, t_startday, t_endday, t_name, t_age) " +
+                   //VALUES(NULL, '
+                    "VALUES(null, '";
+                          //2021-02-22     ', '   2021-02-23   ', '      aaa     ',      20      );
+                MySQL_sql += t_startday + "', '" + t_endday + "', '" + t_name + "', " + t_age + ");";
+
+
+                //배송
+                deliver();
+            }
+
+            SQLSer_conn.Close();
+            MySQL_conn.Close();
+            Console.WriteLine("실행 확인");
+        }
+
+        
+    }
+}
