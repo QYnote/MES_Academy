@@ -1,0 +1,109 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using System.Data.SqlClient;
+
+namespace Mission
+{
+    public partial class Form_Delete : Form
+    {
+        string userID = "";
+
+        public Form_Delete(string d_userID)
+        {
+            userID = d_userID;
+            InitializeComponent();
+        }
+
+        String MySQL_connStr =
+            "Server = 192.168.56.104;" +
+            "Uid = winuser;" +
+            "Pwd = 4321;" +
+            "Database = sqldb;" +
+            "Charset = UTF8";
+        MySqlConnection MySQL_conn; // 교량
+        MySqlCommand MySQL_cmd; // 트럭
+        String MySQL_sql = "";  // 물건박스
+
+        //SQL Server 준비물
+        string SQLSer_connStr =
+            "Server = 192.168.56.104;" +
+            "Uid = winuser;" +
+            "Pwd = 4321;" +
+            "Database = sqldb;";
+        SqlConnection SQLSer_conn;
+        SqlCommand SQLSer_cmd;
+        string SQLSer_sql;
+
+        private void Form_Delete_Load(object sender, EventArgs e)
+        {
+            MySQL_conn = new MySqlConnection(MySQL_connStr);
+            MySQL_conn.Open();
+            MySQL_cmd = new MySqlCommand("", MySQL_conn);
+
+            SQLSer_conn = new SqlConnection(SQLSer_connStr);
+            SQLSer_conn.Open();
+            SQLSer_cmd = new SqlCommand("", SQLSer_conn);
+
+            //SELECT userID, prodName, groupName, price, amount FROM buytbl WHERE prodName = '메모리';
+            MySQL_sql = "SELECT * FROM buytbl WHERE userID = '" + userID + "';";
+            MySQL_cmd.CommandText = MySQL_sql;
+            MySqlDataReader MySQL_reader;
+            MySQL_reader = MySQL_cmd.ExecuteReader();
+
+            SQLSer_sql = "SELECT * FROM buytbl WHERE userID = '" + userID + "';";
+            SQLSer_cmd.CommandText = SQLSer_sql;
+            SqlDataReader SQLSer_reader;
+            SQLSer_reader = SQLSer_cmd.ExecuteReader();
+
+
+            string txt = "없음";
+            //대표 DB는 MySQL로 설정
+            while (MySQL_reader.Read())
+            {
+                txt = "";
+                for(int i=0; i<MySQL_reader.FieldCount; i++)
+                {
+                    txt += MySQL_reader.GetValue(i).ToString() + "\n";
+                }
+                Console.WriteLine();
+            }
+
+            richTextBox1.Text = txt;
+            MySQL_reader.Close();
+            SQLSer_reader.Close();
+        }
+
+        private void Form_Delete_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            MySQL_conn.Close();
+            SQLSer_conn.Close();
+        }
+
+        private void BTN_Delete_Click(object sender, EventArgs e)
+        {
+            //sql = "DELETE from USERtbl WHERE userID = '" + user_id + "'";
+            MySQL_sql = "DELETE FROM buyTbl WHERE userID = '" + userID + "';";
+            MySQL_cmd.CommandText = MySQL_sql;
+            MySQL_cmd.ExecuteNonQuery();
+
+            SQLSer_sql = "DELETE FROM buyTbl WHERE userID = '" + userID + "';";
+            SQLSer_cmd.CommandText = SQLSer_sql;
+            SQLSer_cmd.ExecuteNonQuery();
+
+            this.DialogResult = DialogResult.OK;
+        }
+
+        private void BTN_Cancle_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+        }
+    }
+}
