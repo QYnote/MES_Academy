@@ -1,0 +1,149 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using System.Data.SqlClient;
+
+namespace Mission
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        String MySQL_connStr =
+            "Server = 192.168.56.104;" +
+            "Uid = winuser;" +
+            "Pwd = 4321;" +
+            "Database = sqldb;" +
+            "Charset = UTF8";
+        MySqlConnection MySQL_conn; // 교량
+        MySqlCommand MySQL_cmd; // 트럭
+        String MySQL_sql = "";  // 물건박스
+
+        //SQL Server 준비물
+        string SQLSer_connStr =
+            "Server = 192.168.56.104;" +
+            "Uid = winuser;" +
+            "Pwd = 4321;" +
+            "Database = sqldb;";
+        SqlConnection SQLSer_conn;
+        SqlCommand SQLSer_cmd;
+        string SQLSer_sql;
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            MySQL_conn = new MySqlConnection(MySQL_connStr);
+            MySQL_conn.Open();
+            MySQL_cmd = new MySqlCommand("", MySQL_conn);
+
+            SQLSer_conn = new SqlConnection(SQLSer_connStr);
+            SQLSer_conn.Open();
+            SQLSer_cmd = new SqlCommand("", SQLSer_conn);
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            MySQL_conn.Close();
+            SQLSer_conn.Close();
+            
+        }
+
+        private void BTN_Insert_Click(object sender, EventArgs e)
+        {
+            string userid, prodName, groupName, price, amount;
+            userid = TextBox_userID.Text;
+            prodName = TextBox_prodName.Text;
+            groupName = TextBox_groupName.Text;
+            price = TextBox_price.Text;
+            amount = TextBox_amount.Text;
+
+            //INSERT INTO buytble VALUES(NULL, '아이디', '제품', '그룹', 가격, 수량);
+            MySQL_sql = "INSERT INTO buytbl VALUES(NULL, '";
+            MySQL_sql += userid + "', '" + prodName + "', '" + groupName + "', " + price + ", " + amount + ");";
+
+            //INSERT INTO buytbl(userID, prodName, groupName,price, amount) VALUES('KBS', '운동화', NULL   , 30,   2);
+            SQLSer_sql = "INSERT INTO buytbl(userID, prodName, groupName,price, amount) VALUES('";
+            SQLSer_sql += userid + "', '" + prodName + "', '" + groupName + "', " + price + ", " + amount + ");";
+
+
+            MySQL_cmd.CommandText = MySQL_sql;
+            SQLSer_cmd.CommandText = SQLSer_sql;
+
+            try
+            {
+                MySQL_cmd.ExecuteNonQuery();
+                SQLSer_cmd.ExecuteNonQuery();
+
+                TextBox_userID.Text = "";
+                TextBox_prodName.Text = "";
+                TextBox_groupName.Text = "";
+                TextBox_price.Text = "";
+                TextBox_amount.Text = "";
+            }
+            catch
+            {
+                MessageBox.Show("오류");
+            }
+        }
+
+        private void BTN_Update_Click(object sender, EventArgs e)
+        {
+            string userid, prodName, groupName, price, amount;
+            userid = TextBox_userID.Text;
+            prodName = TextBox_prodName.Text;
+            groupName = TextBox_groupName.Text;
+            price = TextBox_price.Text;
+            amount = TextBox_amount.Text;
+
+
+            //UPDATE buytbl SET NAME = '
+            MySQL_sql = "UPDATE buytbl SET prodName = '";
+            //제품       ', '       그룹      ',     가격     ,      수량      WHERE userID = '    userid    ';
+            MySQL_sql += prodName + "', groupName = '" + groupName + "', price = " + price + ", amount = " + amount + " WHERE userID = '" + userid + "';";
+
+
+                      // UPDATE buytbl SET prodName = '
+            SQLSer_sql = "UPDATE buytbl SET prodName = '";
+                        //마우스     ', groupName = '      기계       ', price =       50     , amount =      2         WHERE userID = '     aaa      ';
+            SQLSer_sql += prodName + "', groupName = '" + groupName + "', price = " + price + ", amount = " + amount + " WHERE userID = '" + userid + "';";
+
+
+            MySQL_cmd.CommandText = MySQL_sql;
+            SQLSer_cmd.CommandText = SQLSer_sql;
+
+            try
+            {
+                MySQL_cmd.ExecuteNonQuery();
+                SQLSer_cmd.ExecuteNonQuery();
+
+                TextBox_userID.Text = "";
+                TextBox_prodName.Text = "";
+                TextBox_groupName.Text = "";
+                TextBox_price.Text = "";
+                TextBox_amount.Text = "";
+            }
+            catch
+            {
+                MessageBox.Show("오류");
+            }
+        }
+
+        private void BTN_Delete_Click(object sender, EventArgs e)
+        {
+            string userID;
+            userID = TextBox_userID.Text;
+
+            Form_Delete frm = new Form_Delete(userID);
+            frm.ShowDialog();
+        }
+    }
+}
