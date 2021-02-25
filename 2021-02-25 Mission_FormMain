@@ -1,0 +1,99 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
+
+
+namespace Mission01
+{
+    public partial class Form_Main : Form
+    {
+        public Form_Main()
+        {
+            InitializeComponent();
+        }
+
+        //MySQL 준비물
+        string MySQL_connStr =
+            "Server=192.168.56.104;" +
+            "Uid=winuser;" +
+            "Pwd=4321;" +
+            "Database=sqldb;" +
+            "Charset=UTF8";
+        MySqlConnection MySQL_conn;
+        MySqlCommand MySQL_cmd;
+        //MySqlDataReader MySQL_reader;
+        //string MySQL_sql = "";
+
+        ////SQL Server 준비물
+        //string SQLSer_connStr =
+        //    "Server=192.168.56.104;" +
+        //    "Uid=winuser;" +
+        //    "Pwd=4321;" +
+        //    "Database=sqldb;";
+        //SqlConnection SQLSer_conn;
+        //SqlCommand SQLSer_cmd;
+        //SqlDataReader SQLSer_reader;
+        //string SQLSer_sql = "";
+
+
+
+        private void Form_Main_Load(object sender, EventArgs e)
+        {
+            //MySQL
+            MySQL_conn = new MySqlConnection(MySQL_connStr);
+            MySQL_conn.Open();
+            MySQL_cmd = new MySqlCommand("", MySQL_conn);
+
+            ////SQL Server
+            //SQLSer_conn = new SqlConnection(SQLSer_connStr);
+            //SQLSer_conn.Open();
+            //SQLSer_cmd = new SqlCommand("", SQLSer_conn);
+        }
+
+        private void Form_Main_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            MySQL_conn.Close();
+            //SQLSer_conn.Close();
+            MessageBox.Show("종료");
+        }
+
+        private void BTN_Result_Click(object sender, EventArgs e)
+        {
+            Form_Result frm = new Form_Result();
+            frm.ShowDialog();
+        }
+
+        private void BTN_Insert_Click(object sender, EventArgs e)
+        {
+            Form_Insert frm = new Form_Insert();
+            frm.ShowDialog();
+        }
+
+        private void BTN_Update_Click(object sender, EventArgs e)
+        {
+            string userID;
+            userID = TB_Update_userID.Text;
+
+            Form_Update frm = new Form_Update(userID);
+            frm.ShowDialog();
+        }
+
+        private void BTN_Delete_Click(object sender, EventArgs e)
+        {
+            string userID;
+            userID = TB_Delete_userID.Text;
+
+            Form_Delete frm = new Form_Delete(userID);
+            frm.ShowDialog();
+        }
+    }
+}
