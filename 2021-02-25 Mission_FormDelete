@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
+
+namespace Mission01
+{
+    public partial class Form_Delete : Form
+    {
+        string userID, name, birthYear;
+
+        public Form_Delete(string u_id)
+        {
+            userID = u_id;
+            InitializeComponent();
+        }
+
+        //MySQL 준비물
+        string MySQL_connStr =
+            "Server=192.168.56.104;" +
+            "Uid=winuser;" +
+            "Pwd=4321;" +
+            "Database=sqldb;" +
+            "Charset=UTF8";
+        MySqlConnection MySQL_conn;
+        MySqlCommand MySQL_cmd;
+        MySqlDataReader MySQL_reader;
+        string MySQL_sql = "";
+
+        ////SQL Server 준비물
+        //string SQLSer_connStr =
+        //    "Server=192.168.56.104;" +
+        //    "Uid=winuser;" +
+        //    "Pwd=4321;" +
+        //    "Database=sqldb;";
+        //SqlConnection SQLSer_conn;
+        //SqlCommand SQLSer_cmd;
+        //SqlDataReader SQLSer_reader;
+        //string SQLSer_sql = "";
+
+        private void Form_Delete_Load(object sender, EventArgs e)
+        {
+            //MySQL
+            MySQL_conn = new MySqlConnection(MySQL_connStr);
+            MySQL_conn.Open();
+            MySQL_cmd = new MySqlCommand("", MySQL_conn);
+
+            ////SQL Server
+            //SQLSer_conn = new SqlConnection(SQLSer_connStr);
+            //SQLSer_conn.Open();
+            //SQLSer_cmd = new SqlCommand("", SQLSer_conn);
+
+
+            MySQL_sql = "SELECT userID, name, birthYear FROM userTBL";
+            MySQL_cmd.CommandText = MySQL_sql;
+            MySQL_reader = MySQL_cmd.ExecuteReader();
+            MySQL_reader.Read();
+
+            userID = (string)MySQL_reader["userID"];
+            name = (string)MySQL_reader["name"];
+            birthYear = MySQL_reader["birthYear"].ToString();
+
+
+            TB_userID.Text = userID;
+            TB_name.Text = name;
+            TB_birthYear.Text = birthYear;
+
+            MySQL_reader.Close();
+        }
+
+        private void Form_Delete_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            MySQL_conn.Close();
+            //SQLSer_conn.Close();
+        }
+
+        private void BTN_Delete_Click(object sender, EventArgs e)
+        {
+            //<4> 데이터베이스 해제 (교량 철거)
+            MySQL_sql = "DELETE from USERtbl WHERE userID = '" + userID + "'";
+            MySQL_cmd.CommandText = MySQL_sql;
+            MySQL_cmd.ExecuteNonQuery();
+
+            this.DialogResult = DialogResult.OK;
+        }
+
+        private void BTN_Cancle_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+        }
+    }
+}
