@@ -1,0 +1,114 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
+
+namespace Mission01
+{
+    public partial class Form_Insert : Form
+    {
+        public Form_Insert()
+        {
+            InitializeComponent();
+        }
+
+        //MySQL 준비물
+        string MySQL_connStr =
+            "Server=192.168.56.104;" +
+            "Uid=winuser;" +
+            "Pwd=4321;" +
+            "Database=sqldb;" +
+            "Charset=UTF8";
+        MySqlConnection MySQL_conn;
+        MySqlCommand MySQL_cmd;
+        //MySqlDataReader MySQL_reader;
+        string MySQL_sql = "";
+
+        ////SQL Server 준비물
+        //string SQLSer_connStr =
+        //    "Server=192.168.56.104;" +
+        //    "Uid=winuser;" +
+        //    "Pwd=4321;" +
+        //    "Database=sqldb;";
+        //SqlConnection SQLSer_conn;
+        //SqlCommand SQLSer_cmd;
+        //SqlDataReader SQLSer_reader;
+        //string SQLSer_sql = "";
+
+        private void Form_Insert_Load(object sender, EventArgs e)
+        {
+            //MySQL
+            MySQL_conn = new MySqlConnection(MySQL_connStr);
+            MySQL_conn.Open();
+            MySQL_cmd = new MySqlCommand("", MySQL_conn);
+
+            //SQL Server
+            //SQLSer_conn = new SqlConnection(SQLSer_connStr);
+            //SQLSer_conn.Open();
+            //SQLSer_cmd = new SqlCommand("", SQLSer_conn);
+        }
+
+        private void Form_Insert_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            TB_userID.Text = "";
+            TB_name.Text = "";
+            TB_birthYear.Text = "";
+            TB_addr.Text = "";
+            TB_mobile1.Text = "";
+            TB_mobile2.Text = "";
+            TB_height.Text = "";
+
+
+            MySQL_conn.Close();
+            //SQLSer_conn.Close();
+        }
+
+        private void BTN_Insert_Click(object sender, EventArgs e)
+        {
+            //열 변수 설정
+            string userID, name, addr, mobile1, mobile2, birthYear, height;
+
+            //입력값 받아오기
+            userID = TB_userID.Text.ToString();
+            name = TB_name.Text.ToString();
+            birthYear = TB_birthYear.Text.ToString();
+            addr = TB_addr.Text.ToString();
+            mobile1 = TB_mobile1.Text.ToString(); 
+            mobile2 = TB_mobile2.Text.ToString(); 
+            height = TB_height.Text.ToString();
+            //mDate = 
+
+            //MySQL DB로 전송
+            MySQL_sql =
+               //INSERT INTO userTbl 
+                "INSERT INTO userTbl " +
+               //    VALUES('
+                    "VALUES('";
+            MySQL_sql +=
+              // aaa      ', '    bbb     ', '      2000       ', '    서울
+                userID + "', '" + name + "', '" + birthYear + "', '" + addr
+                     //', '     010       ', '    12345678   ',       170     , NULL);
+                    + "', '" + mobile1 + "', '" + mobile2 + "', " + height + ", '"+ DateTime.Now.ToString("yyyy/MM/dd") + "');";
+            
+
+            MySQL_cmd.CommandText = MySQL_sql;
+            //INSERT INTO userTbl VALUES('aaa', 'bbb', '2000', '서울', '010', '12345678', 170, NULL);
+
+
+            //SQL Server DB로 전송
+
+
+            MySQL_cmd.ExecuteNonQuery();
+
+            this.DialogResult = DialogResult.OK;
+        }
+    }
+}
