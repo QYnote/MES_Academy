@@ -1,0 +1,130 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
+
+namespace Mission01
+{
+    public partial class Form_Result : Form
+    {
+        public Form_Result()
+        {
+            InitializeComponent();
+        }
+
+        //대표 서버는 SQL, 백업용 서버는 SQL Server로 한다.
+        //MySQL 준비물
+        string MySQL_connStr =
+            "Server=192.168.56.104;" +
+            "Uid=winuser;" +
+            "Pwd=4321;" +
+            "Database=sqldb;" +
+            "Charset=UTF8";
+        MySqlConnection MySQL_conn;
+        MySqlCommand MySQL_cmd;
+        MySqlDataReader MySQL_reader;
+        string MySQL_sql = "";
+
+        ////SQL Server 준비물
+        //string SQLSer_connStr =
+        //    "Server=192.168.56.104;" +
+        //    "Uid=winuser;" +
+        //    "Pwd=4321;" +
+        //    "Database=sqldb;";
+        //SqlConnection SQLSer_conn;
+        //SqlCommand SQLSer_cmd;
+
+        private void Form_Result_Load(object sender, EventArgs e)
+        {
+            //MySQL
+            MySQL_conn = new MySqlConnection(MySQL_connStr);
+            MySQL_conn.Open();
+            MySQL_cmd = new MySqlCommand("", MySQL_conn);
+
+            ////SQL Server
+            //SQLSer_conn = new SqlConnection(SQLSer_connStr);
+            //SQLSer_conn.Open();
+            //SQLSer_cmd = new SqlCommand("", SQLSer_conn);
+
+            //불러올 열 이름 변수로 설정
+            string userID, name, birthYear, addr, mobile1, mobile2, height, mDate;
+
+            //rTB에 데이터 출력하기
+            MySQL_sql = "SELECT * FROM userTBL";
+            MySQL_cmd.CommandText = MySQL_sql;
+            MySQL_reader = MySQL_cmd.ExecuteReader();
+
+            //엑셀 칸 나누기
+            ListView_result.View = View.Details;
+            //칸별로 제목 넣기
+            ListView_result.Columns.Add("아이디");
+            ListView_result.Columns.Add("이름");
+            ListView_result.Columns.Add("출생년도");
+            ListView_result.Columns.Add("주소");
+            ListView_result.Columns.Add("국번");
+            ListView_result.Columns.Add("핸드폰");
+            ListView_result.Columns.Add("키");
+            ListView_result.Columns.Add("가입일");
+
+            string txt;
+            ListViewItem item;
+
+            while (MySQL_reader.Read())
+            {
+                userID = (string)MySQL_reader["userID"];
+                name = (string)MySQL_reader["name"];
+                birthYear = MySQL_reader["birthYear"].ToString();
+                addr = (string)MySQL_reader["addr"];
+                if (!(MySQL_reader["mobile1"] is System.DBNull))
+                    mobile1 = (String)MySQL_reader["mobile1"];
+                else mobile1 = "";
+                if (!(MySQL_reader["mobile2"] is System.DBNull))
+                    mobile2 = (String)MySQL_reader["mobile2"];
+                else mobile2 = "";
+                height = (string)MySQL_reader["height"].ToString();
+                mDate = MySQL_reader["mDate"].ToString();
+
+                txt = userID + "\t" + name + "\t";
+                txt += birthYear + "\t" + mDate + "\n";
+
+                item = new ListViewItem(userID);
+                item.SubItems.Add(name);
+                item.SubItems.Add(birthYear.ToString());
+                item.SubItems.Add(addr);
+                item.SubItems.Add(mobile1);
+                item.SubItems.Add(mobile2);
+                item.SubItems.Add(height);
+                item.SubItems.Add(mDate);
+
+                ListView_result.Items.Add(item);
+            }
+
+            for(int i=0; i<ListView_result.Columns.Count; i++)
+            {
+                ListView_result.Columns[i].TextAlign = HorizontalAlignment.Center;
+                ListView_result.Columns[i].Width = -2;
+            }
+
+            MySQL_reader.Close();
+        }
+
+        private void Form_Result_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            MySQL_conn.Close();
+            //SQLSer_conn.Close();
+        }
+
+        private void BTN_OK_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+        }
+    }
+}
