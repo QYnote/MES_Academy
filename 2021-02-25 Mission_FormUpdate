@@ -1,0 +1,118 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
+
+namespace Mission01
+{
+    public partial class Form_Update : Form
+    {
+        string userID, name, birthYear, addr, mobile1, mobile2, height, mDate;
+
+        public Form_Update(string u_id)
+        {
+            userID = u_id;
+            InitializeComponent();
+        }
+
+        //MySQL 준비물
+        string MySQL_connStr =
+            "Server=192.168.56.104;" +
+            "Uid=winuser;" +
+            "Pwd=4321;" +
+            "Database=sqldb;" +
+            "Charset=UTF8";
+        MySqlConnection MySQL_conn;
+        MySqlCommand MySQL_cmd;
+        MySqlDataReader MySQL_reader;
+        string MySQL_sql = "";
+
+        ////SQL Server 준비물
+        //string SQLSer_connStr =
+        //    "Server=192.168.56.104;" +
+        //    "Uid=winuser;" +
+        //    "Pwd=4321;" +
+        //    "Database=sqldb;";
+        //SqlConnection SQLSer_conn;
+        //SqlCommand SQLSer_cmd;
+        //SqlDataReader SQLSer_reader;
+        //string SQLSer_sql = "";
+
+        private void Form_Update_Load(object sender, EventArgs e)
+        {
+            //MySQL
+            MySQL_conn = new MySqlConnection(MySQL_connStr);
+            MySQL_conn.Open();
+            MySQL_cmd = new MySqlCommand("", MySQL_conn);
+            
+
+            ////SQL Server
+            //SQLSer_conn = new SqlConnection(SQLSer_connStr);
+            //SQLSer_conn.Open();
+            //SQLSer_cmd = new SqlCommand("", SQLSer_conn);
+
+            //rTB에 데이터 불러오기
+            MySQL_sql = "SELECT * FROM userTBL";
+            MySQL_cmd.CommandText = MySQL_sql;
+            MySQL_reader = MySQL_cmd.ExecuteReader();
+            MySQL_reader.Read();
+
+            userID = (string)MySQL_reader["userID"];
+            name = (string)MySQL_reader["name"];
+            birthYear = MySQL_reader["birthYear"].ToString();
+            addr = (string)MySQL_reader["addr"];
+            mobile1 = (string)MySQL_reader["mobile1"];
+            mobile2 = (string)MySQL_reader["mobile2"];
+            height = MySQL_reader["height"].ToString();
+            mDate = MySQL_reader["mDate"].ToString();
+
+
+            TB_userID.Text = userID;
+            TB_name.Text = name;
+            TB_birthYear.Text = birthYear;
+            TB_addr.Text = addr;
+            TB_mobile1.Text = mobile1;
+            TB_mobile2.Text = mobile2;
+            TB_height.Text = height;
+            TB_mDate.Text = mDate.ToString();
+
+            MySQL_reader.Close();
+        }
+
+        private void Form_Update_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            //SQLSer_conn.Close();
+        }
+
+        private void BTN_Update_Click(object sender, EventArgs e)
+        {
+            
+            name = TB_name.Text;
+            birthYear = TB_birthYear.Text;
+            addr = TB_addr.Text;
+            mobile1 = TB_mobile1.Text;
+            mobile2 = TB_mobile2.Text;
+            height = TB_height.Text;
+
+            // <3> 물건을 준비해서, 트럭에 실어서 다리 건너 부어넣기.
+            MySQL_sql = "UPDATE userTBL SET name = '";
+            MySQL_sql += name + "', birthyear = " + birthYear + ", addr = '" + addr + "', mobile1 = '" +
+                mobile1 + "', mobile2 = '" + mobile2 + "', height = " + height + 
+                " WHERE userID = '" + userID + "';";
+
+            MySQL_cmd.CommandText = MySQL_sql;
+
+            MySQL_cmd.ExecuteNonQuery();
+
+            this.DialogResult = DialogResult.OK;
+        }
+    }
+}
