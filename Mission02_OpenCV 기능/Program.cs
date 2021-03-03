@@ -31,44 +31,44 @@ namespace Mission02_OpenCV_기능
              */
             //화소점 처리
             //1. 그레이 스케일
-            //Cv2.CvtColor(inCvImg, outCvImg, ColorConversionCodes.BGR2GRAY);
+            Cv2.CvtColor(inCvImg, outCvImg, ColorConversionCodes.BGR2GRAY);
             //원본,  출력      효과
 
             //밝기
-            //int br_value = rnd.Next(-255, 255);
-            //Cv2.Add(inCvImg, br_value , outCvImg);
+            int br_value = rnd.Next(-255, 255);
+            Cv2.Add(inCvImg, br_value , outCvImg);
 
             //반전
-            //Cv2.BitwiseNot(inCvImg, outCvImg);
+            Cv2.BitwiseNot(inCvImg, outCvImg);
 
             //감마
 
 
             //2. 2진화
-            //Cv2.CvtColor(inCvImg, outCvImg, ColorConversionCodes.BGR2GRAY);
-            //Cv2.Threshold(outCvImg, outCvImg, 127, 255, ThresholdTypes.Otsu);
-            //Cv2.Threshold(입력, 출력, 기준값, 최대값, ThresholdTypes.Otsu);
+            Cv2.CvtColor(inCvImg, outCvImg, ColorConversionCodes.BGR2GRAY);
+            Cv2.Threshold(outCvImg, outCvImg, 127, 255, ThresholdTypes.Otsu);
+            Cv2.Threshold(입력, 출력, 기준값, 최대값, ThresholdTypes.Otsu);
 
             //3. 적응형 2진화
-            //Cv2.CvtColor(inCvImg, outCvImg, ColorConversionCodes.BGR2GRAY);
-            //Cv2.AdaptiveThreshold(outCvImg, outCvImg, 255, AdaptiveThresholdTypes.GaussianC, ThresholdTypes.Binary, 25, 5);
+            Cv2.CvtColor(inCvImg, outCvImg, ColorConversionCodes.BGR2GRAY);
+            Cv2.AdaptiveThreshold(outCvImg, outCvImg, 255, AdaptiveThresholdTypes.GaussianC, ThresholdTypes.Binary, 25, 5);
 
 
             //기하학처리
             //확대
-            //Cv2.PyrUp(inCvImg, outCvImg, new OpenCvSharp.Size(inCvImg.Width * 2, inCvImg.Height * 2));
+            Cv2.PyrUp(inCvImg, outCvImg, new OpenCvSharp.Size(inCvImg.Width * 2, inCvImg.Height * 2));
             //축소
-            //Cv2.PyrDown(inCvImg, outCvImg, new OpenCvSharp.Size(inCvImg.Width / 2, inCvImg.Height / 2));
+            Cv2.PyrDown(inCvImg, outCvImg, new OpenCvSharp.Size(inCvImg.Width / 2, inCvImg.Height / 2));
             //상하 반전
-            //Cv2.Flip(inCvImg, outCvImg, FlipMode.X);
+            Cv2.Flip(inCvImg, outCvImg, FlipMode.X);
             //좌우 반전
-            //Cv2.Flip(inCvImg, outCvImg, FlipMode.Y);
+            Cv2.Flip(inCvImg, outCvImg, FlipMode.Y);
             //상하+좌우 반전
-            //Cv2.Flip(inCvImg, outCvImg, FlipMode.XY);
+            Cv2.Flip(inCvImg, outCvImg, FlipMode.XY);
 
             //화소 영역처리
             //5.블러링
-            //Cv2.Blur(inCvImg, outCvImg, new OpenCvSharp.Size(15, 15));
+            Cv2.Blur(inCvImg, outCvImg, new OpenCvSharp.Size(15, 15));
 
 
             // (6) 주황색 추출
