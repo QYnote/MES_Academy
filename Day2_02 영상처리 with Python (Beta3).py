@@ -96,6 +96,9 @@ def saveImg() :
     cv2.imwrite(saveFp.name, saveCvImg)
     print('save')
 
+    # 2021-03 MES 스마트팩토리 구축전문가과정
+    # C# 부분 추가 강의 Python
+    # 심준보 作
 
 
 
