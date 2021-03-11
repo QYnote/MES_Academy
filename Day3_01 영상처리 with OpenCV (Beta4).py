@@ -4,7 +4,7 @@ from tkinter.filedialog import  * # 파일 대화상자
 from tkinter.simpledialog import *
 
 import cv2
-import numpy as np    # numpy를 np로 축약해서 쓰겠다. ex) numpy.abc --> np.abc
+import numpy as np    #  numpy를 np로 축약해서 쓰겠다. ex) numpy.abc --> np.abc
 
 ## 함수 선언부
 
