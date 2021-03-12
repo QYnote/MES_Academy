@@ -15,7 +15,6 @@ namespace Project01
     public partial class DBForm : Form
     {
         public String saveFname;
-        string i_user = "winuserName";
         public byte[,,] o_inImg;
         public int o_inH, o_inW;
         byte[,,] S_outImg;

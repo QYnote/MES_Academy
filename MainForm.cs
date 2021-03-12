@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Drawing.Imaging;    //save용도
+using OpenCvSharp;
 
 
 namespace Project01
@@ -18,7 +19,133 @@ namespace Project01
         public Focus_BT()
         {
             InitializeComponent();
+            customizeDesine();
         }
+
+        private void customizeDesine()
+        {
+            Panel_SideMenu_File.Visible = false;
+            Panel_SideMenu_Function.Visible = false;
+            Panel_SideMenu_OpenCvFunction.Visible = false;
+            Panel_SideMenu_SubMenu.Visible = false;
+            Panel_SideMenu_SubMenu2.Visible = false;
+
+        }
+
+        private void hideSubMenu()
+        {
+            if (Panel_SideMenu_File.Visible == true)
+                Panel_SideMenu_File.Visible = false;
+            if (Panel_SideMenu_Function.Visible == true)
+                Panel_SideMenu_Function.Visible = false;
+            if (Panel_SideMenu_OpenCvFunction.Visible == true)
+                Panel_SideMenu_OpenCvFunction.Visible = false;
+            if (Panel_SideMenu_SubMenu.Visible == true)
+                Panel_SideMenu_SubMenu.Visible = false;
+            if (Panel_SideMenu_SubMenu2.Visible == true)
+                Panel_SideMenu_SubMenu2.Visible = false;
+        }
+
+        private void hideSndSubMenu()
+        {
+            if (Panel_SideMenu_File_Normal.Visible == true)
+                Panel_SideMenu_File_Normal.Visible = false;
+            if (Panel_SideMenu_Function_Function1.Visible == true)
+                Panel_SideMenu_Function_Function1.Visible = false;
+            if (Panel_SideMenu_Function_Function2.Visible == true)
+                Panel_SideMenu_Function_Function2.Visible = false;
+            if (Panel_SideMenu_Function_Function3.Visible == true)
+                Panel_SideMenu_Function_Function3.Visible = false;
+            if (Panel_SideMenu_Function_Function4.Visible == true)
+                Panel_SideMenu_Function_Function4.Visible = false;
+            
+        }
+
+        private void showSubMenu(Panel subMenu)
+        {
+            if (subMenu.Visible == false)
+            {
+                subMenu.Visible = true;
+            }
+            else
+                subMenu.Visible = false; 
+            
+        }
+        
+        //메뉴 파일 선택
+        private void MenuBTN_File_Click(object sender, EventArgs e)
+        {
+            hideSubMenu();
+            showSubMenu(Panel_SideMenu_File);
+
+        }
+
+        //메뉴 기능 선택
+        private void MenuBTN_Function_Click(object sender, EventArgs e)
+        {
+            hideSubMenu();
+            showSubMenu(Panel_SideMenu_Function);
+        }
+        private void MenuBTN_OpenCvFunction_Click(object sender, EventArgs e)
+        {
+            hideSubMenu();
+            showSubMenu(Panel_SideMenu_OpenCvFunction);
+        }
+
+        //메뉴 파일 기능 선택
+        //일반
+        private void MenuBTN_File_Normal_Click(object sender, EventArgs e)
+        {
+            
+            showSubMenu(Panel_SideMenu_SubMenu);
+            hideSndSubMenu();
+            showSubMenu(Panel_SideMenu_File_Normal);
+        }
+        
+       
+        //기능부 선택
+        private void MenuBTN_Function_Function1_Click(object sender, EventArgs e)
+        {
+            
+            showSubMenu(Panel_SideMenu_SubMenu);
+            hideSndSubMenu();
+            showSubMenu(Panel_SideMenu_Function_Function1);
+        }
+
+        private void MenuBTN_Function_Function2_Click(object sender, EventArgs e)
+        {
+            
+            showSubMenu(Panel_SideMenu_SubMenu);
+            hideSndSubMenu();
+            showSubMenu(Panel_SideMenu_Function_Function2);
+        }
+
+        private void MenuBTN_Function_Function3_Click(object sender, EventArgs e)
+        {
+            
+            showSubMenu(Panel_SideMenu_SubMenu);
+            hideSndSubMenu();
+            showSubMenu(Panel_SideMenu_Function_Function3);
+        }
+
+        private void MenuBTN_Function_Function4_Click(object sender, EventArgs e)
+        {
+            
+            showSubMenu(Panel_SideMenu_SubMenu);
+            hideSndSubMenu();
+            showSubMenu(Panel_SideMenu_Function_Function4);
+        }
+
+
+        //OpenCv부 선택
+        private void MenuBTN_OpenCvFunction_Function_Click(object sender, EventArgs e)
+        {
+            showSubMenu(Panel_SideMenu_SubMenu2);
+            hideSndSubMenu();
+            showSubMenu(Panel_SideMenu_Function_Function4);
+        }
+
+
 
         //전역변수부
         public byte[,,] outImg = null;
@@ -27,6 +154,7 @@ namespace Project01
         int inH, inW;
         OpenSelectForm opFrm;
 
+        Mat inCvImg, outCvImg;
 
         Bitmap paper;
         const int RGB = 3, RR = 0, GG = 1, BB = 2;  //RGB 갯수, RGB 순서0,1,2
@@ -36,11 +164,29 @@ namespace Project01
         bool RangeSelect = false;
 
 
+
+
         //메뉴 이벤트 처리부
-        private void 열기ToolStripMenuItem_Click(object sender, EventArgs e)
+        //열기
+        private void MenuBTN_File_Normal_Load_Click(object sender, EventArgs e)
         {
             openImg();
         }
+        //저장
+        private void MenuBTN_File_Normal_Save_Click(object sender, EventArgs e)
+        {
+            SaveImg();
+        }
+        //DB
+        private void MenuBTN_File_DBServer_Click(object sender, EventArgs e)
+        {
+            hideSndSubMenu();
+            DBImg();
+        }
+        //OpenCV
+        
+
+        //UI 변경 전
         private void 저장ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveImg();
@@ -56,8 +202,13 @@ namespace Project01
         }
         private void BTN_DB_Click(object sender, EventArgs e)
         {
-            DBImg();
+            
         }
+        private void MenuBTN_File_OpenCV_Click(object sender, EventArgs e)
+        {
+            hideSndSubMenu();
+        }
+
 
 
         //화소점처리 처리부
@@ -65,10 +216,7 @@ namespace Project01
         {
             equal_img();
         }
-        private void OriginalBT_Click(object sender, EventArgs e)
-        {
-            equal_img();
-        }
+        
 
         private void 밝게어둡게ToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -130,7 +278,77 @@ namespace Project01
             changeColor_img();  //채도 변경
         }
 
+
+        private void OriginalBT_Click(object sender, EventArgs e)
+        {
+            equal_img();
+        }
+
+        //UI변경 후
+        private void MenuBTN_Function_Function1_Posterising_Click(object sender, EventArgs e)
+        {
+            posterising();
+        }
+
+        private void MenuBTN_Function_Function1_Gamma_Click(object sender, EventArgs e)
+        {
+            gamma();
+        }
+
+        private void MenuBTN_Function_Function1_Reverse_Click(object sender, EventArgs e)
+        {
+            reverse_img();
+        }
+
+        private void MenuBTN_Function_Function1_Focus_Click(object sender, EventArgs e)
+        {
+            focus();
+        }
+
+        private void MenuBTN_Function_Function1_Gray_Click(object sender, EventArgs e)
+        {
+            gray_img();
+        }
+
+        private void MenuBTN_Function_Function1_Bright_Click(object sender, EventArgs e)
+        {
+            bright_image();
+        }
+
+        private void MenuBTN_Function_Function1_ColorChange_Click(object sender, EventArgs e)
+        {
+            changeColor_img();
+        }
+
         //기하학 처리
+        //UI 변경 후
+        private void MenuBTN_Function_Function3_Move_Click(object sender, EventArgs e)
+        {
+            move_Img();
+        }
+
+        private void MenuBTN_Function_Function3_ZoomOut_Click(object sender, EventArgs e)
+        {
+            zoom_out_Img();
+        }
+
+        private void MenuBTN_Function_Function3_ZoomIn_Click(object sender, EventArgs e)
+        {
+            zoom_in_Img();
+        }
+
+        private void MenuBTN_Function_Function3_RowMirror_Click(object sender, EventArgs e)
+        {
+            Row_Mirror_Img();
+        }
+
+        private void MenuBTN_Function_Function3_HeighMirror_Click(object sender, EventArgs e)
+        {
+            High_Mirror_Img();
+        }
+
+        //UI 변경 전
+
         private void 확대ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             zoom_in_Img();
@@ -179,6 +397,54 @@ namespace Project01
             High_Mirror_Img();
         }
         //화소영역처리
+        //UI 변경 후
+        private void Sharp_BT_Click_1(object sender, EventArgs e)
+        {
+            sharp_image();
+        }
+
+        private void HFillter_BT_Click_1(object sender, EventArgs e)
+        {
+            hFilter_image();
+        }
+
+        private void Gausian_BT_Click_1(object sender, EventArgs e)
+        {
+            gaussian_image();
+        }
+
+        private void VectEnge_BT_Click_1(object sender, EventArgs e)
+        {
+            vecticalEdge_image();
+        }
+
+        private void Emboss5_BT_Click_1(object sender, EventArgs e)
+        {
+            emboss5_image();
+        }
+
+        private void Blurr_BT_Click_1(object sender, EventArgs e)
+        {
+            blurr_image();
+        }
+
+        private void HorEdge_BT_Click_1(object sender, EventArgs e)
+        {
+            horizonEdge_image();
+        }
+
+        private void Emboss3_BT_Click_1(object sender, EventArgs e)
+        {
+            emboss_image();
+        }
+
+        private void Homogen_BT_Click_1(object sender, EventArgs e)
+        {
+            homogen_image();
+        }
+
+
+        //UI변경 전
         private void 엠보싱ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             emboss_image();
@@ -264,6 +530,28 @@ namespace Project01
             homogen_image();
         }
         //히스토그램
+        //UI 변경 후
+        private void MenuBTN_Function_Function4_Stretch_Click(object sender, EventArgs e)
+        {
+            histo_Strech_img();
+        }
+
+        private void MenuBTN_Function_Function4_EndIn_Click(object sender, EventArgs e)
+        {
+            histo_Endin_img();
+        }
+
+        private void MenuBTN_Function_Function4_DrawHisto_Click(object sender, EventArgs e)
+        {
+            draw_Histogram();
+        }
+
+        private void MenuBTN_Function_Function4_Equalized_Click(object sender, EventArgs e)
+        {
+            equalized_img();
+        }
+
+        //UI 변경 전
         private void 그리기ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             draw_Histogram();
@@ -343,6 +631,45 @@ namespace Project01
             RangeSelect = true;
         }
 
+        string fileName;
+
+        //OpenCV
+        private void MenuBTN_OpenCvFunction_Open_Click(object sender, EventArgs e)
+        {
+            openCvImg();
+        }
+        //그레이
+        private void Panel_SideMenu_OpenCvFunction_Gray_Click(object sender, EventArgs e)
+        {
+            openCvGray();
+        }
+        //경계선 추출
+        private void Panel_SideMenu_OpenCvFunction_EdgeLineUp_Click(object sender, EventArgs e)
+        {
+            edgeLineUp();
+        }
+        //색 추출(주황색)
+        private void Panel_SideMenu_OpenCvFunction_ColorChoose_Click(object sender, EventArgs e)
+        {
+            ColorChoose();
+        }
+        //모폴로지
+        private void button1_Click(object sender, EventArgs e)
+        {
+            mofologe();
+        }
+        //코너 추출
+        private void Panel_SideMenu_OpenCvFunction_SelectConor_Click(object sender, EventArgs e)
+        {
+            selectCornor();
+        }
+        //원 검출
+        private void Panel_SideMenu_OpenCvFunction_SelectCircle_Click(object sender, EventArgs e)
+        {
+            selectCircle();
+        }
+
+
         //단축키
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
@@ -369,6 +696,38 @@ namespace Project01
             inImg = opFrm.o_inImg;  //연 파일 배열
             inH = opFrm.o_inH;      //연 파일 높이
             inW = opFrm.o_inW;      //연 파일 폭
+
+            equal_img();
+        }
+
+        private void openCvImg()
+        {
+            OpenFileDialog ofd = new OpenFileDialog();  // 객체 생성
+            ofd.DefaultExt = "";
+            ofd.Filter = "칼라필터 | *.png; *.jpg; *.bmp; *.if";    //호환파일?
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+            fileName = ofd.FileName;
+
+            //Cv방식으로 불러오기
+            inCvImg = Cv2.ImRead(fileName);
+            Cv2.Transpose(inCvImg, inCvImg);    //불러온 이미지가 회전되어 있기떄문에 정상으로 복구
+
+            // 중요! 입력이미지의 높이, 폭 알아내기
+            inW = inCvImg.Width;
+            inH = inCvImg.Height;
+            inImg = new byte[RGB, inH, inW]; // 메모리 할당
+
+            // openCV 이미지 --> 메모리 (로딩)
+            for (int i = 0; i < inH; i++)
+                for (int k = 0; k < inW; k++)
+                {
+                    var c = inCvImg.At<Vec3b>(i, k);    //RGB값 가져오기
+
+                    inImg[RR, i, k] = c.Item2;
+                    inImg[GG, i, k] = c.Item1;
+                    inImg[BB, i, k] = c.Item0;
+                }
 
             equal_img();
         }
@@ -400,15 +759,15 @@ namespace Project01
         {
             // 벽, 게시판, 종이 크기 조절
             paper = new Bitmap(outH, outW); // 종이
-            pictureBox1.Size = new Size(outH, outW); // 캔버스
-            if (outH + 550 < 1050 && outW + 130 < 770)
-                this.Size = new Size(1050, 770); // 벽
-            else if (outH + 550 < 1050 && outW + 130 >= 770)
-                this.Size = new Size(1050, outW + 130);
-            else if (outH + 550 >= 1050 && outW + 130 < 770)
-                this.Size = new Size(outH + 550, 770);
+            pictureBox1.Size = new System.Drawing.Size(outH, outW); // 캔버스
+            if (outH + 100 < 850 && outW + 50 < 700)
+                this.Size = new System.Drawing.Size(850, 700); // 벽
+            else if (outH + 100 < 850 && outW + 50 >= 700)
+                this.Size = new System.Drawing.Size(850, outW + 50);
+            else if (outH + 100 >= 850 && outW + 50 < 700)
+                this.Size = new System.Drawing.Size(outH + 100, 700);
             else
-                this.Size = new Size(outH + 550, outW + 130);
+                this.Size = new System.Drawing.Size(outH + 100, outW + 50);
 
 
             Color pen; // 펜(콕콕 찍을 용도)
@@ -424,7 +783,8 @@ namespace Project01
                 }
             pictureBox1.Image = paper; // 게시판에 종이를 붙이기.
 
-            
+            hideSubMenu();
+            hideSndSubMenu();
         }
         
         //영상처리 함수부
@@ -1241,6 +1601,8 @@ namespace Project01
 
         
 
+
+
         //수직 엣지
         void vecticalEdge_image()
         {
@@ -1310,6 +1672,10 @@ namespace Project01
             displayImg();
         }
 
+        
+
+
+
         //수평 엣지
         void horizonEdge_image()
         {
@@ -1378,6 +1744,8 @@ namespace Project01
             /////////////////////////////////////////////
             displayImg();
         }
+
+        
 
         //5*5
         //엠보싱
@@ -1450,6 +1818,8 @@ namespace Project01
             /////////////////////////////////////////////
             displayImg();
         }
+
+        
 
         //유사 연산자
         void homogen_image()
@@ -1541,6 +1911,8 @@ namespace Project01
             displayImg();
         }
 
+        
+
         //히스토그램
         //히스토그램 그리기
         void draw_Histogram()
@@ -1561,7 +1933,9 @@ namespace Project01
 
             hform.ShowDialog();
         }
+
         
+
         //스트레칭
         void histo_Strech_img()
         {
@@ -1602,6 +1976,8 @@ namespace Project01
             /////////////////////////////////////////////
             displayImg();
         }
+
+        
 
         //앤드인 탐색
         void histo_Endin_img()
@@ -1701,9 +2077,183 @@ namespace Project01
             /////////////////////////////////////////////
             displayImg();
         }
-    }
 
-    
-    
-    
+        //OpenCV 함수 모음
+        //OpenCV_outImg --> outImg
+        void Cv2ToOutImg()
+        {
+            // 출력 이미지 메모리 확보
+            outH = outCvImg.Height;
+            outW = outCvImg.Width;
+            outImg = new byte[RGB, outH, outW];
+            // OpenCV 이미지 --> 메모리 (로딩)
+            for (int i = 0; i < outH; i++)
+                for (int k = 0; k < outW; k++)
+                {
+                    var c = outCvImg.At<Vec3b>(i, k);
+                    outImg[RR, i, k] = c.Item2;
+                    outImg[GG, i, k] = c.Item1;
+                    outImg[BB, i, k] = c.Item0;
+                }
+            displayImg();
+        }
+
+        
+        void openCvGray()
+        {
+            // 출력 openCV 이미지 크기 결정 (알고리즘)
+            //int oH, oW;  // outCvImg 크기
+            //oH = inCvImg.Height;
+            //oW = inCvImg.Width;
+            //outCvImg = Mat.Ones(new OpenCvSharp.Size(oW, oH), MatType.CV_8UC1);
+
+            //////////////////////////
+            // 진짜 OpenCV용 알고리즘
+            Cv2.CvtColor(inCvImg, outCvImg, ColorConversionCodes.BGR2GRAY);
+            /////////////////////////////
+
+            Cv2ToOutImg();
+        }
+
+        
+        //경계선 추출
+        void edgeLineUp()
+        {
+            outCvImg = new Mat();
+
+            Cv2.Sobel(inCvImg, outCvImg, MatType.CV_8UC1, 1, 0, 3, 1, 0, BorderTypes.Reflect101);
+
+            Cv2ToOutImg();
+        }
+
+
+        
+        //주황색 추출
+        private void ColorChoose()
+        {
+            
+            outCvImg = new Mat();
+
+            //////////////////////////
+            // 진짜 OpenCV용 알고리즘
+            Mat hsv = new Mat();    //채도박스 준비
+            Cv2.CvtColor(inCvImg, hsv, ColorConversionCodes.BGR2HSV);
+                //inCvImg 의 RGB 값을 채도로 바꿔서 박스에 담기
+            Mat[] HSV = Cv2.Split(hsv);
+                //일렬로 담은 hsv를 나눠서 HSV에 담기
+            Mat H = new Mat(inCvImg.Size(), MatType.CV_8UC1);
+                //inCvImg크기, 8bit unsigned 인 단색 배열 준비
+            Cv2.InRange(HSV[0], new Scalar(8), new Scalar(20), H);
+                //HSV[0]에서 Scalar(RGB 범위)값의 사이에 있는 값을 H로 담아 넣는다(0,1로 담는다)
+            Cv2.BitwiseAnd(hsv, hsv, outCvImg, H);
+                //Bitwise사칙연산(실행시킬 Img, 앞에꺼 이진화, 결과이미지, 마스크)
+            Cv2.CvtColor(outCvImg, outCvImg, ColorConversionCodes.HSV2BGR);
+                //HSV색을 RGB 색으로 변환
+
+            Cv2ToOutImg();
+        }
+
+        //모폴로지
+        void mofologe()
+        {
+            // 출력 openCV 이미지 크기 결정 (알고리즘)
+            //int oH, oW;  // outCvImg 크기
+            //oH = inCvImg.Height;
+            //oW = inCvImg.Width;
+            //outCvImg = Mat.Ones(new OpenCvSharp.Size(oW, oH), MatType.CV_8UC1);
+            outCvImg = new Mat();
+
+            //////////////////////////
+            // 진짜 OpenCV용 알고리즘
+            Mat kernel = Cv2.GetStructuringElement(MorphShapes.Cross,
+                new OpenCvSharp.Size(3, 3));
+            Cv2.Dilate(inCvImg, outCvImg, kernel, new OpenCvSharp.Point(-1, -1),
+                3, BorderTypes.Reflect101, new Scalar(0));
+            /////////////////////////////
+
+            Cv2ToOutImg();
+        }
+
+        
+        void selectCornor()
+        {
+            outCvImg = new Mat();
+
+            //////////////////////////
+            // 진짜 OpenCV용 알고리즘
+            Mat gray = new Mat();
+            outCvImg = inCvImg.Clone();
+            Cv2.CvtColor(inCvImg, gray, ColorConversionCodes.BGR2GRAY);
+            Point2f[] corners = Cv2.GoodFeaturesToTrack(gray, 1000, 0.03, 5, null, 3, false, 0);
+            for (int i = 0; i < corners.Length; i++)
+            {
+                OpenCvSharp.Point pt = new OpenCvSharp.Point((int)corners[i].X, (int)corners[i].Y);
+                Cv2.Circle(outCvImg, pt, 5, Scalar.Yellow, Cv2.FILLED);
+            }
+            /////////////////////////////
+
+            Cv2ToOutImg();
+        }
+
+
+        //원 검출
+        void selectCircle()
+        {
+
+            outCvImg = new Mat();
+
+            //////////////////////////
+            // 진짜 OpenCV용 알고리즘
+            Mat image = new Mat();
+            outCvImg = inCvImg.Clone();
+
+            Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(3, 3));
+
+            Cv2.CvtColor(inCvImg, image, ColorConversionCodes.BGR2GRAY);
+            Cv2.Dilate(image, image, kernel, new OpenCvSharp.Point(-1, -1), 3);
+            Cv2.GaussianBlur(image, image, new OpenCvSharp.Size(13, 13), 3, 3, BorderTypes.Reflect101);
+            Cv2.Erode(image, image, kernel, new OpenCvSharp.Point(-1, -1), 3);
+
+            CircleSegment[] circles = Cv2.HoughCircles(image, HoughModes.Gradient, 1, 100, 100, 35, 0, 0);
+
+            for (int i = 0; i < circles.Length; i++)
+            {
+                OpenCvSharp.Point center = new OpenCvSharp.Point(circles[i].Center.X, circles[i].Center.Y);
+
+                Cv2.Circle(outCvImg, center, (int)circles[i].Radius, Scalar.White, 3);
+                Cv2.Circle(outCvImg, center, 5, Scalar.AntiqueWhite, Cv2.FILLED);
+            }
+            /////////////////////////////
+
+            Cv2ToOutImg();
+        }
+
+        //원을 찾고 색상 지정하기
+        private void hard()
+        {
+            Mat image = new Mat();
+            outCvImg = inCvImg.Clone();
+
+            Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(3, 3));
+
+            Cv2.CvtColor(inCvImg, image, ColorConversionCodes.BGR2GRAY);
+            Cv2.Dilate(image, image, kernel, new OpenCvSharp.Point(-1, -1), 3);
+            Cv2.GaussianBlur(image, image, new OpenCvSharp.Size(13, 13), 3, 3, BorderTypes.Reflect101);
+            Cv2.Erode(image, image, kernel, new OpenCvSharp.Point(-1, -1), 3);
+
+            CircleSegment[] circles = Cv2.HoughCircles(image, HoughModes.Gradient, 1, 100, 100, 35, 0, 0);
+
+            for (int i = 0; i < circles.Length; i++)
+            {
+                OpenCvSharp.Point center = new OpenCvSharp.Point(circles[i].Center.X, circles[i].Center.Y);
+
+                Cv2.Circle(outCvImg, center, (int)circles[i].Radius, Scalar.White, 3);
+                Cv2.Circle(outCvImg, center, 5, Scalar.AntiqueWhite, Cv2.FILLED);
+            }
+            /////////////////////////////
+
+            Cv2ToOutImg();
+        }
+
+    }
 }

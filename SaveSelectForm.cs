@@ -18,7 +18,6 @@ namespace Project01
         Focus_BT mainFrm = new Focus_BT();  //메인폼
         
         public String saveFname;
-        string i_user = "winuserName";
         byte[,,] S_outImg;
         int S_outH, S_outW;
         const int RGB = 3, RR = 0, GG = 1, BB = 2;  //RGB 갯수, RGB 순서0,1,2
@@ -32,28 +31,15 @@ namespace Project01
 
         }
 
-        //MySQL 불러오기 위한 문장
-        String connStr = "Server=192.168.56.101;" +
-            "Uid=winuser;" +
-            "Pwd=4321;" +
-            "Database=blob_db;" +
-            "Charset=UTF8";
-        MySqlConnection conn; // 교량
-        MySqlCommand cmd; // 트럭
-        String sql = "";  // 물건박스
-        MySqlDataReader reader; // 트럭이 가져올 끈
-
 
         private void SaveSelectForm_Load(object sender, EventArgs e)
         {
-            conn = new MySqlConnection(connStr);
-            conn.Open();
-            cmd = new MySqlCommand("", conn);
+           
         }
 
         private void SaveSelectForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            conn.Close();
+            
         }
 
 
